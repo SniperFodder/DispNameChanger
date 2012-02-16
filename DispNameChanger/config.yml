@@ -1,0 +1,46 @@
+# Message settings change the behavior of DNC in reguards to
+# the login/logout and kick messages including the display name.
+# true: message should be changed to include display name.
+# false: message should be left alone.
+
+# Prefix toggles whether a character is prepended to display
+# names. The default character is ~. If a string is provided,
+# the first character in the string is used as the prefix.
+# If the string is blank, the default is used.
+
+# Scoreboard toggles the use of the scoreboard integration.
+# Note: Integration into scoreboard will force the player 
+# display names to be unique.
+
+# Language is used to set the language that the plugin will
+# use for it's messages.
+# Valid values: en_US
+
+#### Not Implemented Yet ####
+# Stats enables sending of usage statistics to 
+# http://stats.smilingdevil.com/
+# 
+# Enabled: enables or disables stats collection.
+# Message: Whether a message is printed to console about the stats
+# of the plugin.
+# Player-Count: Enables collection of player count statistics.
+# Player-Names: Enables collection of player names in the server.
+messages:
+    # The Login/Logout message that is displayed.
+    login: true
+    # The Kick message that is displayed.
+    kick: true
+
+prefix:
+    enabled: false
+    character: ~
+    
+scoreboard: false
+
+language: en_US
+
+stats:
+    enabled: true
+    message: true
+    player-count: false
+    player-names: false
