@@ -280,9 +280,24 @@ public class DispNameChanger extends JavaPlugin
 			spoutArgs[0] = "unknown";
 		}
 		
+		List<String> authors = getDescription().getAuthors();
+		
+		StringBuilder sb = new StringBuilder();
+		
+		sb.append("[");
+		
+		for(String s : authors)
+		{
+			sb.append(s).append(", ");
+		}
+		
+		sb.delete(sb.lastIndexOf(","), sb.length());
+		
+		sb.append("]");
+		
 		Object[] dncArgs =
 		{ getDescription().getVersion(),
-				getDescription().getAuthors().toString(),
+				sb.toString(),
 				getDescription().getName() };
 		
 		MessageFormat formatter = new MessageFormat("");
