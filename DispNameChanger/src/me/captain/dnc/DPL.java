@@ -140,6 +140,7 @@ public class DPL implements Listener
 	
 	private void restoreNick(Player player)
 	{
+		System.out.println("!!! RESTORE NICK !!!");
 		String sName = player.getName();
 		
 		String sDName = player.getDisplayName();
@@ -162,8 +163,10 @@ public class DPL implements Listener
 		
 		//sDName = sDName.replaceAll("(&([a-f0-9]))", "§$2");
 		
-		if(plugin.usePrefix())
+		if(plugin.usePrefix() && !sName.equals(ChatColor.stripColor(sDName)))
 		{
+			System.out.println("!!! USE PREFIX !!!!");
+			
 			if(!sDName.startsWith(Character.toString(plugin.getPrefix())))
 			{
 				sDName = plugin.getPrefix() + sDName;

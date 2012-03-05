@@ -651,10 +651,12 @@ public class DispNameCE implements CommandExecutor
 		// Remove all the colors
 		String spoutName = ChatColor.stripColor(newName);
 		
-		// Attatch the prefix if needed.
-		spoutName = prefixNick(spoutName);
-		
-		
+		if(!target.getName().equals(spoutName))
+		{
+			// Attatch the prefix if needed.
+			spoutName = prefixNick(spoutName);
+		}
+
 		target.setDisplayName(spoutName);
 		
 		if (plugin.useScoreboard())
