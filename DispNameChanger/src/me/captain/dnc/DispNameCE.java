@@ -167,7 +167,7 @@ public class DispNameCE implements CommandExecutor
 					if (plugin.useScoreboard())
 					{
 						// Ensure unique
-						if (!checkUnique(stripPrefix(saArgs[0])))
+						if (!checkUnique(saArgs[0]))
 						{
 							changer.sendMessage(ChatColor.RED
 									+ plugin.dnc_short
@@ -622,9 +622,11 @@ public class DispNameCE implements CommandExecutor
 	/**
 	 * Changes the display name of the target.
 	 * 
-	 * @param target the player to change.
+	 * @param target
+	 *            the player to change.
 	 * 
-	 * @param newName the new name to use.
+	 * @param newName
+	 *            the new name to use.
 	 */
 	private void changeDisplayName(Player target, String newName)
 	{
@@ -634,27 +636,43 @@ public class DispNameCE implements CommandExecutor
 	/**
 	 * Changes the display name of the target and sends notifications.
 	 * 
-	 * @param caller The person trying to make the change.
+	 * @param caller
+	 *            The person trying to make the change.
 	 * 
-	 * @param target The intended target of the change.
+	 * @param target
+	 *            The intended target of the change.
 	 * 
-	 * @param oldName The old name of the target.
+	 * @param oldName
+	 *            The old name of the target.
 	 * 
-	 * @param newName The new name to use.
+	 * @param newName
+	 *            The new name to use.
 	 */
 	private void changeDisplayName(Player caller, Player target,
 			String oldName, String newName)
 	{
-		Object[] users =
-		{ oldName, newName };
+		Object[] users = new Object[2];
 		
-		// Remove all the colors
-		String spoutName = ChatColor.stripColor(newName);
+		users[0] = oldName;
+		
+		String spoutName = newName;
 		
 		// Attatch the prefix if needed.
-		spoutName = prefixNick(spoutName);
+		if(!target.getName().equals(newName))
+		{
+			spoutName = plugin.prefixNick(spoutName);
+		}
 		
+		System.out.println(plugin.dnc_short + "Before: " + spoutName);
 		
+		// Parse Color Codes.
+		spoutName = plugin.parseColors(spoutName);
+		
+		System.out.println(plugin.dnc_short + "After: " + spoutName);
+		
+		users[1] = spoutName;
+		
+		// Set the DisplayName
 		target.setDisplayName(spoutName);
 		
 		if (plugin.useScoreboard())
@@ -711,6 +729,7 @@ public class DispNameCE implements CommandExecutor
 			spoutTarget.setTitle(spoutName);
 		}
 		
+		/*
 		DP pClass = (DP) plugin.getDatabase().find(DP.class).where()
 				.ieq("PlayerName", target.getName()).findUnique();
 		
@@ -724,12 +743,14 @@ public class DispNameCE implements CommandExecutor
 		pClass.setDisplayName(newName);
 		
 		plugin.getDatabase().save(pClass);
+		*/
 	}
 	
 	/**
 	 * Checks for a valid player based upon a given name.
 	 * 
-	 * @param name the name to check for.
+	 * @param name
+	 *            the name to check for.
 	 * 
 	 * @return an array of players matching the name.
 	 */
@@ -750,7 +771,7 @@ public class DispNameCE implements CommandExecutor
 		
 		String sTarget;
 		
-		if(!plugin.useScoreboard())
+		if (!plugin.useScoreboard())
 		{
 			sTarget = name.toLowerCase();
 		}
@@ -758,7 +779,6 @@ public class DispNameCE implements CommandExecutor
 		{
 			sTarget = name;
 		}
-		 
 		
 		for (Player p : players)
 		{
@@ -766,14 +786,14 @@ public class DispNameCE implements CommandExecutor
 			
 			sDisplayName = p.getDisplayName();
 			
-			if(!plugin.useScoreboard())
+			if (!plugin.useScoreboard())
 			{
 				sDisplayName = sDisplayName.toLowerCase();
 			}
 			
 			sDisplayName = ChatColor.stripColor(sDisplayName);
 			
-			sDisplayName = stripPrefix(sDisplayName);
+			sDisplayName = plugin.stripPrefix(sDisplayName);
 			
 			if (sTarget.equals(sDisplayName))
 			{
@@ -800,69 +820,43 @@ public class DispNameCE implements CommandExecutor
 	}
 	
 	/**
-	 * Prefixes a nick with the prefix and shortens it if it
-	 * exceeds 16 characters.
+	 * Ensure that a name is unique to the current player list.
 	 * 
-	 * @param nick The nick to format with the Prefix.
+	 * @param name
+	 *            The name to check for uniqueness.
 	 * 
-	 * @return the formated string.
+	 * @return true if unique, false otherwise.
 	 */
-	private String prefixNick(String nick)
+	private boolean checkUnique(String name)
 	{
-		if (nick == null)
-		{
-			throw new NullPointerException();
-		}
+		Player[] players = plugin.getServer().getOnlinePlayers();
 		
-		String sNick = null;
+		String sDisplayName;
 		
-		if (plugin.usePrefix())
+		for (Player p : players)
 		{
-			sNick = plugin.getPrefix() + nick;
-		}
-		else
-		{
-			sNick = nick;
-		}
-		
-		if (plugin.useScoreboard())
-		{
-			if (sNick.length() > 16)
-			{
-				sNick = sNick.substring(0, 16);
-			}
-		}
-		
-		return sNick;
-	}
-	
-	private String stripPrefix(String nick)
-	{
-		String sNick = nick;
-		
-		if(plugin.usePrefix())
-		{
-			String prefix = Character.toString(plugin.getPrefix());
+			sDisplayName = ChatColor.stripColor(p.getDisplayName());
 			
-			if(sNick.contains(prefix))
+			sDisplayName = plugin.stripPrefix(sDisplayName);
+			
+			if (name.equals(sDisplayName))
 			{
-				String[] split = sNick.split(prefix, 2);
-				
-				sNick = split[0] + split[1];
+				return false;
 			}
 		}
 		
-		return sNick;
+		return true;
 	}
 	
 	/**
 	 * Parses the argument string, returning 1 or 2 arguments matching
 	 * <target> <name>
 	 * 
-	 * @param args the arguments string from the command.
+	 * @param args
+	 *            the arguments string from the command.
 	 * 
 	 * @return A String array containing the arguments <target> and/or
-	 * <name> in that order.
+	 *         <name> in that order.
 	 */
 	private String[] parseArguments(String[] args)
 	{
@@ -1018,77 +1012,4 @@ public class DispNameCE implements CommandExecutor
 			}
 		}
 	}
-	
-	/**
-	 * Ensure that a name is unique to the current player list.
-	 * 
-	 * @param name The name to check for uniqueness.
-	 * 
-	 * @return true if unique, false otherwise.
-	 */
-	private boolean checkUnique(String name)
-	{
-		Player[] players = plugin.getServer().getOnlinePlayers();
-		
-		String sDisplayName;
-		
-		for (Player p : players)
-		{
-			sDisplayName = ChatColor.stripColor(p.getDisplayName());
-			
-			sDisplayName = stripPrefix(sDisplayName);
-			
-			if (name.equals(sDisplayName))
-			{
-				return false;
-			}
-		}
-		
-		return true;
-	}
-	
-	/*
-	 * Convert all the color tags and such to color codes.
-	 * 
-	 * @credit MiracleM4n http://mdev.in/
-	 * 
-	 * private String addColour(String string) { string =
-	 * string.replace("`e", "") .replace("`r", "\u00A7c") .replace("`R",
-	 * "\u00A74") .replace("`y", "\u00A7e") .replace("`Y", "\u00A76")
-	 * .replace("`g", "\u00A7a") .replace("`G", "\u00A72") .replace("`a",
-	 * "\u00A7b") .replace("`A", "\u00A73") .replace("`b", "\u00A79")
-	 * .replace("`B", "\u00A71") .replace("`p", "\u00A7d") .replace("`P",
-	 * "\u00A75") .replace("`k", "\u00A70") .replace("`s", "\u00A77")
-	 * .replace("`S", "\u00A78") .replace("`w", "\u00A7f");
-	 * 
-	 * string = string.replace("<r>", "") .replace("<black>", "\u00A70")
-	 * .replace("<navy>", "\u00A71") .replace("<green>", "\u00A72")
-	 * .replace("<teal>", "\u00A73") .replace("<red>", "\u00A74")
-	 * .replace("<purple>", "\u00A75") .replace("<gold>", "\u00A76")
-	 * .replace("<silver>", "\u00A77") .replace("<gray>", "\u00A78")
-	 * .replace("<blue>", "\u00A79") .replace("<lime>", "\u00A7a")
-	 * .replace("<aqua>", "\u00A7b") .replace("<rose>", "\u00A7c")
-	 * .replace("<pink>", "\u00A7d") .replace("<yellow>", "\u00A7e")
-	 * .replace("<white>", "\u00A7f");
-	 * 
-	 * string = string.replaceAll("(§([a-fA-F0-9]))", "\u00A7$2");
-	 * 
-	 * string = string.replaceAll("(&([a-fA-F0-9]))", "\u00A7$2");
-	 * 
-	 * return string.replace("&&", "&"); }
-	 */
-	
-	/*
-	 * Remove all color codes.
-	 * 
-	 * @credit MiracleM4n http://mdev.in/
-	 * 
-	 * private String removeColour(String string) { addColour(string);
-	 * 
-	 * string = string.replaceAll("(§([a-fA-F0-9]))", "& $2");
-	 * 
-	 * string = string.replaceAll("(&([a-fA-F0-9]))", "& $2");
-	 * 
-	 * return string.replace("&&", "&"); }
-	 */
 }
