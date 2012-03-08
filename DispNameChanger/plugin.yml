@@ -1,6 +1,6 @@
 ##  Plugin Information  ##
 name: DispNameChanger
-version: 5.2.1
+version: 5.3
 description: Lets you change the display name of yourself or others.
 ##  Original Author     ##
 author: captainawesome7
@@ -27,7 +27,7 @@ commands:
             /resetname [target]
             Aliases: resetname
     check:
-        aliases: [checkname, namecheck]
+        aliases: [checkname, namecheck, realname]
         description: Shows the alternate name of the player (Real name or Display name).
         permission: dispname.check
         usage: |

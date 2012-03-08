@@ -4,13 +4,17 @@ import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
+
 import javax.persistence.PersistenceException;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
@@ -45,6 +49,7 @@ public class DispNameChanger extends JavaPlugin
 	public String info_player_join = "info_player_join";
 	public String info_player_kick = "info_player_kick";
 	public String info_player_quit = "info_player_quit";
+	public String info_player_death = "info_player_death";
 	public String info_spout = "info_spout";
 	public String info_spout_target = "info_spout_target";
 	public String info_spout_caller = "info_spout_caller";
@@ -68,11 +73,15 @@ public class DispNameChanger extends JavaPlugin
 	
 	private final DPL playerlistener;
 	
+	private ChatColor ccPrefix;
+	
 	private Locale locale;
 	
 	private SpoutManager spout;
 	
 	private Plugin pSpout;
+	
+	private boolean bChangeDeath;
 	
 	private boolean bChangeKick;
 	
@@ -80,19 +89,23 @@ public class DispNameChanger extends JavaPlugin
 	
 	private boolean bUsePrefix;
 	
+	private boolean bUsePrefixColor;
+	
 	private boolean bUseSpout;
 	
 	private boolean bUseScoreboard;
 	
-	private boolean bStatsEnabled;
+	// private boolean bStatsEnabled;
 	
-	private boolean bStatsMessage;
+	// private boolean bStatsMessage;
 	
-	private boolean bStatsPlayers;
+	// private boolean bStatsPlayers;
 	
-	private boolean bStatsPlayersFine;
+	// private boolean bStatsPlayersFine;
 	
 	private char cPrefix;
+	
+	private String sPrefix;
 	
 	/**
 	 * Constructs a new DispNameChanger.
@@ -112,19 +125,23 @@ public class DispNameChanger extends JavaPlugin
 		
 		bUsePrefix = false;
 		
+		bChangeDeath = true;
+		
 		bChangeLogin = true;
 		
 		bChangeKick = true;
 		
-		bStatsEnabled = true;
+		// bStatsEnabled = true;
 		
-		bStatsMessage = true;
+		// bStatsMessage = true;
 		
-		bStatsPlayers = false;
+		// bStatsPlayers = false;
 		
-		bStatsPlayersFine = false;
+		// bStatsPlayersFine = false;
 		
-		cPrefix = '~';
+		cPrefix = '+';
+		
+		ccPrefix = ChatColor.YELLOW;
 		
 		locale = null;
 	}
@@ -172,6 +189,16 @@ public class DispNameChanger extends JavaPlugin
 	}
 	
 	/**
+	 * Returns the color to be used the prefix. Default is yellow.
+	 * 
+	 * @return The color to use with the prefix.
+	 */
+	public ChatColor getPrefixColor()
+	{
+		return ccPrefix;
+	}
+	
+	/**
 	 * Returns whether or not spout is on the server.
 	 * 
 	 * @return true if spout is loaded, false otherwise.
@@ -182,13 +209,13 @@ public class DispNameChanger extends JavaPlugin
 	}
 	
 	/**
-	 * Check whether login message should be changed to use display name.
+	 * Check whether death message should be changed to use display name.
 	 * 
-	 * @return true to change, false otherwise.
+	 * @return True to change, false otherwise.
 	 */
-	public boolean changeLogin()
+	public boolean changeDeath()
 	{
-		return bChangeLogin;
+		return bChangeDeath;
 	}
 	
 	/**
@@ -202,14 +229,14 @@ public class DispNameChanger extends JavaPlugin
 		return bChangeKick;
 	}
 	
-	public boolean usePrefix()
+	/**
+	 * Check whether login message should be changed to use display name.
+	 * 
+	 * @return true to change, false otherwise.
+	 */
+	public boolean changeLogin()
 	{
-		return bUsePrefix;
-	}
-	
-	public boolean useScoreboard()
-	{
-		return bUseScoreboard;
+		return bChangeLogin;
 	}
 	
 	@Override
@@ -256,6 +283,237 @@ public class DispNameChanger extends JavaPlugin
 	}
 	
 	/**
+	 * Parses all manually added color codes and changes them to actual
+	 * codes. This also appends a white (<code>&f</code>) to the name. If
+	 * the name exceeds 16 characters and ScoreBoard functionality is
+	 * enabled, this will also trim the name.
+	 * 
+	 * @param name
+	 * @return
+	 */
+	public String parseColors(String name)
+	{
+		StringBuilder sb = new StringBuilder();
+		
+		sb.append(name.replaceAll("(&([0-9a-fkA-Fk]))", "§$2"));
+		
+		String sName = sb.toString();
+		
+		for (ChatColor c : ChatColor.values())
+		{
+			if (sName.contains(c.toString()))
+			{
+				if (useScoreboard())
+				{
+					if (sb.toString().endsWith(ChatColor.WHITE.toString()))
+					{
+						System.out.println(dnc_short
+								+ "parseColors: white end!");
+						break;
+					}
+					
+					if (sb.length() > 14)
+					{
+						System.out.println(dnc_short
+								+ "parseColors: No white end!");
+						
+						sb.delete(14, sb.length());
+					}
+				}
+				
+				ChatColor ccColor = lastColorUsed(sName);
+				
+				if (c != null && ccColor == ChatColor.WHITE)
+				{
+					System.out.println(dnc_short
+							+ "parseColors: last color used!");
+					
+					break;
+				}
+				
+				sb.append(ChatColor.WHITE);
+				
+				break;
+			}
+		}
+		
+		return sb.toString();
+	}
+	
+	/**
+	 * Prefixes a nick with the prefix and shortens it if it exceeds 16
+	 * characters and scoreboard integration is enabled.
+	 * 
+	 * @param nick
+	 *            The nick to format with the Prefix.
+	 * 
+	 * @return the formated string.
+	 */
+	public String prefixNick(String nick)
+	{
+		if (nick == null)
+		{
+			throw new NullPointerException();
+		}
+		
+		String sNick = null;
+		
+		if (usePrefix() && usePrefixColor())
+		{
+			if (!nick.startsWith(sPrefix))
+			{
+				if (checkForColors(nick))
+				{
+					sNick = ccPrefix + Character.toString(cPrefix) + nick;
+				}
+				else
+				{
+					sNick = sPrefix + nick;
+				}
+			}
+		}
+		else if (usePrefix() && !usePrefixColor())
+		{
+			String prefix = Character.toString(cPrefix);
+			
+			sNick = prefix + nick;
+		}
+		else
+		{
+			sNick = nick;
+		}
+		
+		if (useScoreboard())
+		{
+			if (sNick.length() > 16)
+			{
+				sNick = sNick.substring(0, 16);
+			}
+		}
+		
+		System.out.println(dnc_short + "prefix nick: " + sNick.length());
+		
+		System.out.println(dnc_short + "prefix nick: " + sNick);
+		
+		return sNick;
+	}
+	
+	/**
+	 * Checks to see if a nick has colors in it.
+	 * 
+	 * @param nick
+	 *            The nick to check for colors.
+	 * 
+	 * @return True if colors present, false otherwise.
+	 */
+	public boolean checkForColors(String nick)
+	{
+		for (ChatColor c : ChatColor.values())
+		{
+			if (nick.contains(c.toString()))
+			{
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * Returns the last color used in a nick.
+	 * 
+	 * @param nick
+	 *            The nick to check
+	 * 
+	 * @return The ChatColor, or null if no colors used.
+	 */
+	public ChatColor lastColorUsed(String nick)
+	{
+		String[] saNick = nick.split(String.valueOf(ChatColor.COLOR_CHAR));
+		
+		if (saNick.length > 1)
+		{
+			return ChatColor.getByChar(saNick[saNick.length - 1]);
+		}
+		else if (checkForColors(nick))
+		{
+			return ChatColor.getByChar(saNick[0]);
+		}
+		return null;
+	}
+	
+	/**
+	 * Checks whether the prefix function of the plugin is enabled.
+	 * 
+	 * @return true to use prefix, false otherwise.
+	 */
+	public boolean usePrefix()
+	{
+		return bUsePrefix;
+	}
+	
+	/**
+	 * Checks whether prefix should be colored or not.
+	 * 
+	 * @return True if it should be colored, false otherwise.
+	 */
+	public boolean usePrefixColor()
+	{
+		return bUsePrefixColor;
+	}
+	
+	/**
+	 * Checks whether to use the scoreboard function of the plugin.
+	 * 
+	 * @return True if scoreboard integration enabled, false otherwise.
+	 */
+	public boolean useScoreboard()
+	{
+		return bUseScoreboard;
+	}
+	
+	/**
+	 * Strips the prefix from a name. Can be called with prefix option
+	 * disabled.
+	 * 
+	 * @param nick
+	 *            the nick to strip.
+	 * 
+	 * @return the name without the prefix.
+	 */
+	public String stripPrefix(String nick)
+	{
+		String sNick = nick;
+		
+		if (usePrefix() && usePrefixColor())
+		{
+			if (sNick.startsWith(sPrefix))
+			{
+				sNick = sNick.substring(sPrefix.length());
+			}
+			else if (sNick.startsWith(ccPrefix + Character.toString(cPrefix)))
+			{
+				sNick = sNick.substring((ccPrefix + Character
+						.toString(cPrefix)).length());
+			}
+		}
+		else if (usePrefix() && !usePrefixColor())
+		{
+			String prefix = Character.toString(cPrefix);
+			
+			if (sNick.contains(prefix))
+			{
+				String[] split = Pattern.compile(Pattern.quote(prefix)).split(
+						sNick, 2);
+				
+				sNick = split[0] + split[1];
+			}
+		}
+		
+		return sNick;
+	}
+	
+	/**
 	 * Returns the current plugin instance.
 	 * 
 	 * @return the DispNameChanger plugin.
@@ -286,7 +544,7 @@ public class DispNameChanger extends JavaPlugin
 		
 		sb.append("[");
 		
-		for(String s : authors)
+		for (String s : authors)
 		{
 			sb.append(s).append(", ");
 		}
@@ -296,8 +554,7 @@ public class DispNameChanger extends JavaPlugin
 		sb.append("]");
 		
 		Object[] dncArgs =
-		{ getDescription().getVersion(),
-				sb.toString(),
+		{ getDescription().getVersion(), sb.toString(),
 				getDescription().getName() };
 		
 		MessageFormat formatter = new MessageFormat("");
@@ -336,28 +593,55 @@ public class DispNameChanger extends JavaPlugin
 		
 		FileConfiguration conf = getConfig();
 		
+		conf.options().copyDefaults(true);
+		
+		bChangeDeath = conf.getBoolean("messages.death");
+		
 		bChangeLogin = conf.getBoolean("messages.login");
 		
 		bChangeKick = conf.getBoolean("messages.kick");
 		
 		bUsePrefix = conf.getBoolean("prefix.enabled");
 		
-		String sPrefix = conf.getString("prefix.character");
+		String scPrefix = conf.getString("prefix.character");
 		
-		if (sPrefix != null)
+		if (scPrefix != null)
 		{
-			cPrefix = sPrefix.charAt(0);
+			cPrefix = scPrefix.charAt(0);
+		}
+		
+		bUsePrefixColor = conf.getBoolean("prefix.color.enabled");
+		
+		String sPrefixColor = conf.getString("prefix.color.code");
+		
+		if (sPrefixColor != null)
+		{
+			ccPrefix = ChatColor.getByChar(sPrefixColor);
+			
+			if (ccPrefix == null)
+			{
+				ccPrefix = ChatColor.YELLOW;
+			}
+		}
+		else
+		{
+			ccPrefix = ChatColor.YELLOW;
+		}
+		
+		if (usePrefixColor())
+		{
+			sPrefix = ccPrefix + Character.toString(cPrefix) + ChatColor.WHITE;
 		}
 		
 		bUseScoreboard = conf.getBoolean("scoreboard");
 		
-		bStatsEnabled = conf.getBoolean("stats.enabled");
+		// bStatsEnabled = conf.getBoolean("stats.enabled");
 		
-		bStatsMessage = conf.getBoolean("stats.message");
+		// bStatsMessage = conf.getBoolean("stats.message");
 		
-		bStatsPlayers = conf.getBoolean("stats.player-count");
+		// bStatsPlayers = conf.getBoolean("stats.player-count");
 		
-		bStatsPlayersFine = conf.getBoolean("stats.player-names");
+		// bStatsPlayersFine = conf.getBoolean("stats.player-names");
 		
 		String sLocale = getConfig().getString("language");
 		
@@ -416,6 +700,7 @@ public class DispNameChanger extends JavaPlugin
 		info_nick_conflict = dncStrings.getString("info_nick_conflict");
 		info_nick_target = dncStrings.getString("info_nick_target");
 		info_nick_caller = dncStrings.getString("info_nick_caller");
+		info_player_death = dncStrings.getString("info_player_death");
 		info_player_join = dncStrings.getString("info_player_join");
 		info_player_kick = dncStrings.getString("info_player_kick");
 		info_player_quit = dncStrings.getString("info_player_quit");
