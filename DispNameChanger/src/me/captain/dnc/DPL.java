@@ -7,6 +7,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -37,8 +38,22 @@ public class DPL implements Listener
 		
 		formatter = new MessageFormat("");
 	}
+	@EventHandler(priority = EventPriority.LOWEST)
+	public void onPlayerDeath(final PlayerDeathEvent event)
+	{
+		Player player = event.getEntity();
+		
+		if (plugin.changeDeath())
+		{
+			Object[] user = { player.getDisplayName() };
+			
+			formatter.applyPattern(plugin.info_player_death);
+			
+			event.setDeathMessage(formatter.format(user));
+		}
+	}
 	
-	@EventHandler(priority = EventPriority.MONITOR)
+	@EventHandler(priority = EventPriority.LOWEST)
 	public void onPlayerJoin(final PlayerJoinEvent event)
 	{
 		Player player = event.getPlayer();
@@ -48,7 +63,7 @@ public class DPL implements Listener
 		if (plugin.changeLogin())
 		{
 			Object[] user =
-			{ event.getPlayer().getDisplayName() };
+			{ event.getPlayer().getDisplayName(), ChatColor.YELLOW };
 			
 			formatter.applyPattern(plugin.info_player_join);
 			
@@ -63,24 +78,7 @@ public class DPL implements Listener
 		}
 	}
 	
-	@EventHandler(priority = EventPriority.MONITOR)
-	public void onPlayerQuit(final PlayerQuitEvent event)
-	{
-		storeNick(event.getPlayer());
-		
-		if (plugin.changeLogin())
-		{
-			Object[] user =
-			{ event.getPlayer().getDisplayName() };
-			
-			formatter.applyPattern(plugin.info_player_quit);
-			
-			event.setQuitMessage(ChatColor.YELLOW + formatter.format(user));
-			
-		}
-	}
-	
-	@EventHandler(priority = EventPriority.MONITOR)
+	@EventHandler(priority = EventPriority.LOWEST)
 	public void onPlayerKick(final PlayerKickEvent event)
 	{
 		if (event.isCancelled())
@@ -93,49 +91,29 @@ public class DPL implements Listener
 		if (plugin.changeKick())
 		{
 			Object[] user =
-			{ event.getPlayer().getDisplayName() };
+			{ event.getPlayer().getDisplayName(), ChatColor.YELLOW };
 			
 			formatter.applyPattern(plugin.info_player_kick);
 			
 			event.setLeaveMessage(ChatColor.YELLOW + formatter.format(user));
 		}
 	}
-	
-	private void storeNick(Player player)
+
+	@EventHandler(priority = EventPriority.LOWEST)
+	public void onPlayerQuit(final PlayerQuitEvent event)
 	{
-		String sName = player.getName();
+		storeNick(event.getPlayer());
 		
-		String sDName = player.getDisplayName();
-		
-		if(plugin.usePrefix())
+		if (plugin.changeLogin())
 		{
-			String prefix = Character.toString(plugin.getPrefix());
+			Object[] user =
+			{ event.getPlayer().getDisplayName(), ChatColor.YELLOW };
 			
-			if(sDName.contains(prefix))
-			{
-				String[] split = sDName.split(prefix, 2);
-				
-				sDName = split[0] + split[1];
-			}
-		}
-		
-		DP pClass = (DP) plugin.getDatabase().find(DP.class).where()
-				.ieq("PlayerName", sName).findUnique();
-		
-		if (pClass == null)
-		{
-			pClass = new DP();
+			formatter.applyPattern(plugin.info_player_quit);
 			
-			pClass.setPlayerName(sName);
+			event.setQuitMessage(ChatColor.YELLOW + formatter.format(user));
 			
-			pClass.setDisplayName(sDName);
 		}
-		else
-		{
-			pClass.setDisplayName(sDName);
-		}
-		
-		plugin.getDatabase().save(pClass);
 	}
 	
 	private void restoreNick(Player player)
@@ -159,20 +137,15 @@ public class DPL implements Listener
 		
 		sDName = pClass.getDisplayName();
 		
-		//sDName = ChatColor.stripColor(sDName);
+		sDName = plugin.parseColors(sDName);
 		
-		//sDName = sDName.replaceAll("(&([a-f0-9]))", "§$2");
-		
-		if(plugin.usePrefix() && !sName.equals(ChatColor.stripColor(sDName)))
+		if(!sName.equals(sDName))
 		{
-			System.out.println("!!! USE PREFIX !!!!");
-			
-			if(!sDName.startsWith(Character.toString(plugin.getPrefix())))
-			{
-				sDName = plugin.getPrefix() + sDName;
-			}
+			sDName = plugin.prefixNick(sDName);
 		}
 		
+		System.out.println(plugin.dnc_short +  "restorenick: " + sDName);
+
 		if (plugin.useScoreboard())
 		{
 			Player[] players = this.plugin.getServer().getOnlinePlayers();
@@ -206,6 +179,33 @@ public class DPL implements Listener
 		}
 		
 		player.setDisplayName(sDName);
+	}
+
+	private void storeNick(Player player)
+	{
+		String sName = player.getName();
+		
+		String sDName = player.getDisplayName();
+		
+		sDName = plugin.stripPrefix(sDName);
+		
+		DP pClass = (DP) plugin.getDatabase().find(DP.class).where()
+				.ieq("PlayerName", sName).findUnique();
+		
+		if (pClass == null)
+		{
+			pClass = new DP();
+			
+			pClass.setPlayerName(sName);
+			
+			pClass.setDisplayName(sDName);
+		}
+		else
+		{
+			pClass.setDisplayName(sDName);
+		}
+		
+		plugin.getDatabase().save(pClass);
 	}
 	
 }
