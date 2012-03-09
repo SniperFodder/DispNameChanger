@@ -209,8 +209,6 @@ public class DispNameChanger extends JavaPlugin
 	 */
 	public Player[] checkName(String name)
 	{
-		log.warning(dnc_short + "Checkname - Input: " + name);
-		
 		if (name == null)
 		{
 			throw new IllegalArgumentException("Name can not be null.");
@@ -228,8 +226,6 @@ public class DispNameChanger extends JavaPlugin
 		
 		if (!useScoreboard())
 		{
-			log.warning(dnc_short + "Checkname - Target to Lowercase.");
-			
 			sTarget = sTarget.toLowerCase();
 		}
 		
@@ -239,35 +235,23 @@ public class DispNameChanger extends JavaPlugin
 			
 			sDisplayName = p.getDisplayName();
 			
-			log.warning(dnc_short + "Checkname - Before for: " + sName
-					+ " is " + sDisplayName);
-			
 			sDisplayName = ChatColor.stripColor(sDisplayName);
 			
 			sDisplayName = stripPrefix(sDisplayName);
 			
 			if (!useScoreboard())
 			{
-				log.warning(dnc_short + "Checkname - names to Lowercase.");
-				
 				sName = sName.toLowerCase();
 				
 				sDisplayName = sDisplayName.toLowerCase();
 			}
 			
-			log.warning(dnc_short + "Checkname - After for: " + sName + " is "
-					+ sDisplayName);
-			
 			if (sTarget.equals(sDisplayName))
 			{
-				log.warning(dnc_short + "Checkname - Display match.");
-				
 				alPlayers.add(p);
 			}
 			else if (sTarget.equals(sName))
 			{
-				log.warning(dnc_short + "Checkname - Name match.");
-				
 				alPlayers.add(p);
 			}
 		}
@@ -282,8 +266,6 @@ public class DispNameChanger extends JavaPlugin
 		Player[] p = new Player[alPlayers.size()];
 		
 		alPlayers.toArray(p);
-		
-		log.warning(dnc_short + "Checkname - Players List Size: " + p.length);
 		
 		return p;
 	}
