@@ -1,7 +1,6 @@
 package me.captain.dnc;
 
 import java.text.MessageFormat;
-import java.util.ArrayList;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -15,8 +14,8 @@ import org.getspout.spoutapi.player.SpoutPlayer;
  * Command executor for the DispNameChanger Plugin.
  * 
  * Valid commands:aliases that this executor handles are
- * <code>'rename':'newname'</code>, <code>'reset':'resetname':</code>, and
- * <code>'check':'checkname':'namecheck'</code>.
+ * <code>'rename':'newname'</code>, <code>'reset':'resetname'</code>, and
+ * <code>'check':'checkname':'namecheck':'realname'</code>.
  * 
  * @author captainawesome7, itsatacoshop247, Daxiongmao87, Luke Zwekii,
  *         Sammy, SniperFodder
@@ -133,7 +132,7 @@ public class DispNameCE implements CommandExecutor
 				|| commandLabel.equalsIgnoreCase("newname"))
 		{
 			// parse Arguments into <target> <Name>
-			String[] saArgs = parseArguments(args);
+			String[] saArgs = plugin.parseArguments(args);
 			
 			// Ensure that the user can run the command.
 			if (canUseChangeName(changer))
@@ -200,7 +199,7 @@ public class DispNameCE implements CommandExecutor
 					if (canUseChangeNameOther(changer))
 					{
 						// Pull the target we are changing.
-						Player[] players = checkName(saArgs[0]);
+						Player[] players = plugin.checkName(saArgs[0]);
 						
 						if (players == null)
 						{
@@ -389,7 +388,7 @@ public class DispNameCE implements CommandExecutor
 				if (canUseChangeName(changer)
 						&& canUseChangeNameOther(changer))
 				{
-					String[] saArgs = parseArguments(args);
+					String[] saArgs = plugin.parseArguments(args);
 					
 					if (saArgs == null)
 					{
@@ -423,7 +422,7 @@ public class DispNameCE implements CommandExecutor
 					}
 					else if (saArgs.length == 1)
 					{
-						Player[] players = checkName(saArgs[0]);
+						Player[] players = plugin.checkName(saArgs[0]);
 						
 						if (players == null)
 						{
@@ -474,7 +473,7 @@ public class DispNameCE implements CommandExecutor
 		{
 			if (canUseCheckName(changer))
 			{
-				String[] saArgs = parseArguments(args);
+				String[] saArgs = plugin.parseArguments(args);
 				
 				if (saArgs == null)
 				{
@@ -482,7 +481,7 @@ public class DispNameCE implements CommandExecutor
 				}
 				if (saArgs.length == 1)
 				{
-					Player[] players = checkName(saArgs[0]);
+					Player[] players = plugin.checkName(saArgs[0]);
 					
 					if (players == null)
 					{
@@ -747,79 +746,6 @@ public class DispNameCE implements CommandExecutor
 	}
 	
 	/**
-	 * Checks for a valid player based upon a given name.
-	 * 
-	 * @param name
-	 *            the name to check for.
-	 * 
-	 * @return an array of players matching the name.
-	 */
-	private Player[] checkName(String name)
-	{
-		if (name == null)
-		{
-			throw new IllegalArgumentException("Name can not be null.");
-		}
-		
-		Player[] players = plugin.getServer().getOnlinePlayers();
-		
-		ArrayList<Player> alPlayers = new ArrayList<Player>();
-		
-		String sName;
-		
-		String sDisplayName;
-		
-		String sTarget;
-		
-		if (!plugin.useScoreboard())
-		{
-			sTarget = name.toLowerCase();
-		}
-		else
-		{
-			sTarget = name;
-		}
-		
-		for (Player p : players)
-		{
-			sName = p.getName().toLowerCase();
-			
-			sDisplayName = p.getDisplayName();
-			
-			if (!plugin.useScoreboard())
-			{
-				sDisplayName = sDisplayName.toLowerCase();
-			}
-			
-			sDisplayName = ChatColor.stripColor(sDisplayName);
-			
-			sDisplayName = plugin.stripPrefix(sDisplayName);
-			
-			if (sTarget.equals(sDisplayName))
-			{
-				alPlayers.add(p);
-			}
-			else if (sTarget.equals(sName))
-			{
-				alPlayers.add(p);
-			}
-		}
-		
-		alPlayers.trimToSize();
-		
-		if (alPlayers.size() == 0)
-		{
-			return null;
-		}
-		
-		Player[] p = new Player[alPlayers.size()];
-		
-		alPlayers.toArray(p);
-		
-		return p;
-	}
-	
-	/**
 	 * Ensure that a name is unique to the current player list.
 	 * 
 	 * @param name
@@ -846,170 +772,5 @@ public class DispNameCE implements CommandExecutor
 		}
 		
 		return true;
-	}
-	
-	/**
-	 * Parses the argument string, returning 1 or 2 arguments matching
-	 * <target> <name>
-	 * 
-	 * @param args
-	 *            the arguments string from the command.
-	 * 
-	 * @return A String array containing the arguments <target> and/or
-	 *         <name> in that order.
-	 */
-	private String[] parseArguments(String[] args)
-	{
-		String sTarget, sName = "";
-		
-		if (args.length == 0)
-		{
-			return null;
-		}
-		// Only one argument.
-		else if (args.length == 1)
-		{
-			sName = args[0].replace("\"", "");
-			
-			String[] sa =
-			{ sName };
-			
-			return sa;
-		}
-		// Check to see if target/name given.
-		else if (args.length == 2)
-		{
-			// Check to see if Name with Space
-			if (args[0].startsWith("\""))
-			{
-				if (!args[0].endsWith("\""))
-				{
-					sTarget = args[0] + " " + args[1];
-					
-					sTarget = sTarget.replace("\"", "");
-					
-					String[] sa =
-					{ sTarget };
-					
-					return sa;
-				}
-				else
-				{
-					sTarget = args[0].replace("\"", "");
-					
-					sName = args[1].replace("\"", "");
-					
-					String[] sa =
-					{ sTarget, sName };
-					
-					return sa;
-				}
-			}
-			// <target> + <name> given.
-			else
-			{
-				String[] sa =
-				{ args[0], args[1] };
-				
-				return sa;
-			}
-		}
-		// Arguments with spaces given.
-		else
-		{
-			// Check to see if first argument has space.
-			if (args[0].startsWith("\""))
-			{
-				sTarget = "";
-				
-				int iLoop1;
-				
-				// Look for the end quote for the first argument.
-				for (iLoop1 = 0; iLoop1 < args.length; iLoop1++)
-				{
-					sTarget += args[iLoop1];
-					
-					if (args[iLoop1].endsWith("\""))
-					{
-						break;
-					}
-					
-					sTarget += " ";
-				}
-				
-				sTarget = sTarget.replace("\"", "");
-				
-				iLoop1++;
-				
-				// Check to see if really only one argument.
-				if (iLoop1 >= args.length)
-				{
-					
-					String[] sa =
-					{ sTarget };
-					
-					return sa;
-				}
-				
-				// Parse out second argument.
-				for (int iLoop2 = iLoop1; iLoop2 < args.length; iLoop2++)
-				{
-					
-					sName += args[iLoop2] + " ";
-				}
-				
-				int iIndex = sName.lastIndexOf(" ");
-				
-				if (iIndex > -1)
-				{
-					sName = sName.substring(0, iIndex);
-				}
-				
-				sName = sName.replace("\"", "");
-				
-				String[] sa =
-				{ sTarget, sName };
-				
-				return sa;
-			}
-			// First arg doesn't have space.
-			else
-			{
-				sTarget = args[0].replace("\"", "");
-				
-				if (args[1].startsWith("\""))
-				{
-					int iLoop1 = 0;
-					
-					for (iLoop1 = 1; iLoop1 < args.length; iLoop1++)
-					{
-						sName += args[iLoop1];
-						
-						if (args[iLoop1].endsWith("\""))
-						{
-							break;
-						}
-						
-						sName += " ";
-					}
-					
-					if (iLoop1 < (args.length - 1))
-					{
-						return null;
-					}
-					
-					sName = sName.replace("\"", "");
-					
-					String[] sa =
-					{ sTarget, sName };
-					
-					return sa;
-				}
-				else
-				{
-					return null;
-				}
-			}
-		}
 	}
 }
