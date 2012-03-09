@@ -399,12 +399,6 @@ public class DispNameChanger extends JavaPlugin
 			getCommand(cmd.getName()).setExecutor(executor);
 		}
 		
-		getCommand("rename").setExecutor(executor);
-		
-		getCommand("reset").setExecutor(executor);
-		
-		getCommand("check").setExecutor(executor);
-		
 		if (pSpout == null)
 		{
 			this.bUseSpout = false;
