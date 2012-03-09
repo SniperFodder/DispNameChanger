@@ -662,12 +662,8 @@ public class DispNameCE implements CommandExecutor
 			spoutName = plugin.prefixNick(spoutName);
 		}
 		
-		System.out.println(plugin.dnc_short + "Before: " + spoutName);
-		
 		// Parse Color Codes.
 		spoutName = plugin.parseColors(spoutName);
-		
-		System.out.println(plugin.dnc_short + "After: " + spoutName);
 		
 		users[1] = spoutName;
 		
