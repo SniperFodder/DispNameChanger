@@ -1,31 +1,43 @@
 # Message settings change the behavior of DNC in reguards to
-# the login/logout, kick, and death messages including the display
-# name.
+#   the login/logout, kick, and death messages including the
+#   display name.
 # true: message should be changed to include display name.
 # false: message should be left alone.
 # ----
+# Global-Announce sets whether a global announcement of display
+#   names to users should be made whenever one is changed.
+#   Target represents either Admins only, or All users.
+# ALL: All users will recieve the name change broadcast.
+# ADMIN: Only users with the permission node 'dispname.announce'
+#   will recieve broadcasts.
+# ----
 # Prefix toggles whether a character is prepended to display
-# names. The default character is +. If a string is provided,
-# the first character in the string is used as the prefix.
-# If the string is blank, the default is used.
-# The prefix character MUST BE ENCLOSED IN SINGLE QUOTES (' ')!
-# The color code allows you to change the color of the prefix
-# to be used. You do not have to put a & or # to specify the color
-# code.
-# Color Codes can be found here: 
+#   names. The default character is +. If a string is provided,
+#   the first character in the string is used as the prefix.
+#   If the string is blank, the default is used.
+#   The prefix character MUST BE ENCLOSED IN SINGLE QUOTES (' ')!
+#   The color code allows you to change the color of the prefix
+#   to be used. You do not have to put a & or # to specify the color
+#   code.
+# Color Codes can be found here:
 # http://www.minecraftwiki.net/wiki/Classic_server_protocol#Color_Codes
 # ----
 # Scoreboard toggles the use of the scoreboard integration.
-# Note: Integration into scoreboard will force the player 
-# display names to be unique.
+#   Note: Integration into scoreboard will force the player 
+#   display names to be unique. Names longer than 16 characters
+#   will be truncated on the player list. Each color code counts
+#   for two characters.
 # ----
 # Language is used to set the language that the plugin will
-# use for it's messages.
+#   use for it's messages.
 # Valid values: en_US
 messages:
     death: true
     kick: true
     login: true
+global-announce:
+    enabled: true
+    target: ALL
 prefix:
     enabled: false
     character: '+'

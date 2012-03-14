@@ -1,6 +1,7 @@
 package me.captain.dnc;
 
 import java.text.MessageFormat;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -28,9 +29,13 @@ public class DPL implements Listener
 {
 	private static final Logger log = Bukkit.getLogger();
 	
+	private HashMap<String, Integer> entityID;
+	
 	private DispNameChanger plugin;
 	
 	private MessageFormat formatter;
+	
+	private DNCLocalization locale;
 	
 	/**
 	 * Constructs a new DispNameChange Player Listener.
@@ -38,13 +43,23 @@ public class DPL implements Listener
 	 * @param plugin
 	 *            the plugin that created this listener.
 	 */
-	public DPL(DispNameChanger plugin)
+	public DPL()
 	{
-		this.plugin = plugin;
+		plugin = DispNameChanger.getInstance();
+		
+		locale = plugin.getLocalization();
 		
 		formatter = new MessageFormat("");
+		
+		entityID = new HashMap<String, Integer>();
 	}
 	
+	/**
+	 * Triggered on player death.
+	 * 
+	 * @param event
+	 *            the event triggered by the death.
+	 */
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onPlayerDeath(final PlayerDeathEvent event)
 	{
@@ -55,25 +70,32 @@ public class DPL implements Listener
 			Object[] user =
 			{ player.getDisplayName() };
 			
-			formatter.applyPattern(plugin.info_player_death);
+			formatter.applyPattern(locale.info_player_death);
 			
 			event.setDeathMessage(formatter.format(user));
 		}
 	}
 	
+	/**
+	 * Triggered whenever a player has joined the server.
+	 * 
+	 * @param event
+	 */
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onPlayerJoin(final PlayerJoinEvent event)
 	{
 		Player player = event.getPlayer();
 		
-		restoreNick(player);
+		entityID.put(player.getName(), new Integer(player.getEntityId()));
+		
+		plugin.restoreNick(player);
 		
 		if (plugin.changeLogin())
 		{
 			Object[] user =
 			{ event.getPlayer().getDisplayName(), ChatColor.YELLOW };
 			
-			formatter.applyPattern(plugin.info_player_join);
+			formatter.applyPattern(locale.info_player_join);
 			
 			event.setJoinMessage(ChatColor.YELLOW + formatter.format(user));
 		}
@@ -86,6 +108,12 @@ public class DPL implements Listener
 		}
 	}
 	
+	/**
+	 * Triggered whenever a player is kicked from the server.
+	 * 
+	 * @param event
+	 *            The event triggered by the action.
+	 */
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onPlayerKick(final PlayerKickEvent event)
 	{
@@ -94,39 +122,82 @@ public class DPL implements Listener
 			return;
 		}
 		
-		storeNick(event.getPlayer());
+		Player player = event.getPlayer();
+		
+		if (event.isCancelled())
+		{
+			return;
+		}
+		
+		int iEntityID = player.getEntityId();
+		
+		int iStoredID = entityID.get(player.getName()).intValue();
+		
+		if (iEntityID == iStoredID)
+		{
+			plugin.storeNick(player);
+			
+			entityID.remove(player.getName());
+		}
 		
 		if (plugin.changeKick())
 		{
 			Object[] user =
-			{ event.getPlayer().getDisplayName(), ChatColor.YELLOW };
+			{ player.getDisplayName(), ChatColor.YELLOW };
 			
-			formatter.applyPattern(plugin.info_player_kick);
+			formatter.applyPattern(locale.info_player_kick);
 			
 			event.setLeaveMessage(ChatColor.YELLOW + formatter.format(user));
 		}
 	}
 	
+	/**
+	 * Called whenever the player quits the server.
+	 * 
+	 * @param event
+	 *            the event triggered by the action.
+	 */
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onPlayerQuit(final PlayerQuitEvent event)
 	{
-		storeNick(event.getPlayer());
+		Player player = event.getPlayer();
+		
+		int iEntityID = player.getEntityId();
+		
+		int iStoredID = entityID.get(player.getName()).intValue();
+		
+		if (iEntityID == iStoredID)
+		{
+			plugin.storeNick(player);
+			
+			entityID.remove(player.getName());
+		}
 		
 		if (plugin.changeLogin())
 		{
 			Object[] user =
-			{ event.getPlayer().getDisplayName(), ChatColor.YELLOW };
+			{ player.getDisplayName(), ChatColor.YELLOW };
 			
-			formatter.applyPattern(plugin.info_player_quit);
+			formatter.applyPattern(locale.info_player_quit);
 			
 			event.setQuitMessage(ChatColor.YELLOW + formatter.format(user));
 			
 		}
 	}
 	
+	/**
+	 * Changes any display names to real names in any commands a user sends
+	 * to the server.
+	 * 
+	 * @param event
+	 *            The event that was triggered by sending a command.
+	 */
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onCommandPreprocess(PlayerCommandPreprocessEvent event)
 	{
+		/*
+		 * TODO This does not handle Console Events. Re-write to handle ServerCommandEvent.
+		 */
 		Player player = event.getPlayer();
 		
 		StringBuilder sbCommand = null;
@@ -178,7 +249,8 @@ public class DPL implements Listener
 			default:
 				event.setCancelled(true);
 				
-				player.sendMessage(plugin.dnc_short + plugin.error_multi_match);
+				player.sendMessage(ChatColor.RED + plugin.dnc_short
+						+ locale.error_multi_match);
 			}
 			break;
 		// Possible Command + Multipart DispName
@@ -204,12 +276,11 @@ public class DPL implements Listener
 					continue;
 				}
 				
-				
 				switch (target.length)
 				{
 				case 1:
 					
-					if(!target[0].getName().equalsIgnoreCase(s))
+					if (!target[0].getName().equalsIgnoreCase(s))
 					{
 						
 						sbCommand.append(target[0].getName()).append(" ");
@@ -226,8 +297,8 @@ public class DPL implements Listener
 					
 					event.setCancelled(true);
 					
-					player.sendMessage(plugin.dnc_short
-							+ plugin.error_multi_match);
+					player.sendMessage(ChatColor.RED + plugin.dnc_short
+							+ locale.error_multi_match);
 					
 					sbCommand = null;
 					
@@ -302,95 +373,6 @@ public class DPL implements Listener
 		}
 		
 		return false;
-	}
-	
-	private void restoreNick(Player player)
-	{
-		String sName = player.getName();
-		
-		String sDName = player.getDisplayName();
-		
-		DP pClass = (DP) plugin.getDatabase().find(DP.class).where()
-				.ieq("PlayerName", sName).findUnique();
-		
-		if (pClass == null)
-		{
-			pClass = new DP();
-			
-			pClass.setPlayerName(sName);
-			
-			pClass.setDisplayName(sDName);
-		}
-		
-		sDName = pClass.getDisplayName();
-		
-		sDName = plugin.parseColors(sDName);
-		
-		if (!sName.equals(sDName))
-		{
-			sDName = plugin.prefixNick(sDName);
-		}
-		
-		if (plugin.useScoreboard())
-		{
-			Player[] players = this.plugin.getServer().getOnlinePlayers();
-			
-			for (Player p : players)
-			{
-				if (player.equals(p))
-				{
-					continue;
-				}
-				
-				if (p.getDisplayName().equals(sDName))
-				{
-					sDName = pClass.getPlayerName();
-					
-					pClass.setDisplayName(sDName);
-					
-					player.sendMessage(ChatColor.RED + plugin.dnc_short
-							+ plugin.info_nick_conflict);
-					
-					break;
-				}
-			}
-			
-			if (sDName.length() > 16)
-			{
-				sDName = sDName.substring(0, 16);
-			}
-			
-			player.setPlayerListName(sDName);
-		}
-		
-		player.setDisplayName(sDName);
-	}
-	
-	private void storeNick(Player player)
-	{
-		String sName = player.getName();
-		
-		String sDName = player.getDisplayName();
-		
-		sDName = plugin.stripPrefix(sDName);
-		
-		DP pClass = (DP) plugin.getDatabase().find(DP.class).where()
-				.ieq("PlayerName", sName).findUnique();
-		
-		if (pClass == null)
-		{
-			pClass = new DP();
-			
-			pClass.setPlayerName(sName);
-			
-			pClass.setDisplayName(sDName);
-		}
-		else
-		{
-			pClass.setDisplayName(sDName);
-		}
-		
-		plugin.getDatabase().save(pClass);
 	}
 	
 }
