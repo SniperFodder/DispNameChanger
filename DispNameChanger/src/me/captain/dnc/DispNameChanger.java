@@ -4,11 +4,10 @@ import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import java.util.ResourceBundle;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.persistence.PersistenceException;
@@ -16,6 +15,7 @@ import javax.persistence.PersistenceException;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -31,37 +31,6 @@ import org.getspout.spoutapi.SpoutManager;
  */
 public class DispNameChanger extends JavaPlugin
 {
-	public String error_bad_args = "error_bad_args";
-	public String error_bad_user = "error_bad_user";
-	public String error_console = "error_console";
-	public String error_console_rename = "error_console_rename";
-	public String error_max_length = "error_max_length";
-	public String error_multi_match = "error_multi_match";
-	public String error_non_unique = "error_non_unique";
-	
-	public String info_check_multi = "info_check_multi";
-	public String info_check_multi_list = "info_check_multi_list";
-	public String info_check_single = "info_check_single";
-	public String info_nick_conflict = "info_nick_conflict";
-	public String info_nick_target = "info_nick_target";
-	public String info_nick_caller = "info_nick_caller";
-	public String info_no_spout = "info_no_spout";
-	public String info_player_join = "info_player_join";
-	public String info_player_kick = "info_player_kick";
-	public String info_player_quit = "info_player_quit";
-	public String info_player_death = "info_player_death";
-	public String info_spout = "info_spout";
-	public String info_spout_target = "info_spout_target";
-	public String info_spout_caller = "info_spout_caller";
-	public String info_db_make = "info_db_make";
-	public String info_dnc_disabled = "info_dnc_disabled";
-	public String info_dnc_enabled = "info_dnc_enabled";
-	
-	public String permission_check = "permission_check";
-	public String permission_other = "permission_other";
-	public String permission_spaces = "permission_spaces";
-	public String permission_use = "permission_use";
-	
 	public final String dnc_long = "[DispNameChanger] ";
 	public final String dnc_short = "[DNC] ";
 	
@@ -70,6 +39,8 @@ public class DispNameChanger extends JavaPlugin
 	private final Logger log = Bukkit.getLogger();
 	
 	private final DispNameCE executor;
+	
+	private final DNCLocalization localization;
 	
 	private final DPL playerlistener;
 	
@@ -81,11 +52,19 @@ public class DispNameChanger extends JavaPlugin
 	
 	private Plugin pSpout;
 	
+	private String sPrefixFull;
+	
+	private String sPrefixShort;
+	
+	private boolean bBroadcastAll;
+	
 	private boolean bChangeDeath;
 	
 	private boolean bChangeKick;
 	
 	private boolean bChangeLogin;
+	
+	private boolean bGlobalAnnounce;
 	
 	private boolean bUsePrefix;
 	
@@ -105,8 +84,6 @@ public class DispNameChanger extends JavaPlugin
 	
 	private char cPrefix;
 	
-	private String sPrefix;
-	
 	/**
 	 * Constructs a new DispNameChanger.
 	 */
@@ -114,14 +91,18 @@ public class DispNameChanger extends JavaPlugin
 	{
 		super();
 		
-		executor = new DispNameCE(this);
-		
-		playerlistener = new DPL(this);
-		
 		if (instance == null)
 		{
 			instance = this;
 		}
+		
+		localization = new DNCLocalization();
+		
+		executor = new DispNameCE();
+		
+		playerlistener = new DPL();
+		
+		bBroadcastAll = true;
 		
 		bUsePrefix = false;
 		
@@ -130,6 +111,8 @@ public class DispNameChanger extends JavaPlugin
 		bChangeLogin = true;
 		
 		bChangeKick = true;
+		
+		bGlobalAnnounce = true;
 		
 		// bStatsEnabled = true;
 		
@@ -144,68 +127,6 @@ public class DispNameChanger extends JavaPlugin
 		ccPrefix = ChatColor.YELLOW;
 		
 		locale = null;
-	}
-	
-	@SuppressWarnings(
-	{ "unchecked", "rawtypes" })
-	@Override
-	public List<Class<?>> getDatabaseClasses()
-	{
-		List list = new ArrayList();
-		
-		list.add(DP.class);
-		
-		return list;
-	}
-	
-	/**
-	 * Gets the current SpoutManager.
-	 * 
-	 * @return a SpoutManager.
-	 */
-	public SpoutManager getSpoutManager()
-	{
-		return spout;
-	}
-	
-	/**
-	 * Returns the locale used by this plugin.
-	 * 
-	 * @return A locale used for translations.
-	 */
-	public Locale getLocale()
-	{
-		return locale;
-	}
-	
-	/**
-	 * Returns the char used as a prefix for displaynames.
-	 * 
-	 * @return a char for prefixes.
-	 */
-	public char getPrefix()
-	{
-		return cPrefix;
-	}
-	
-	/**
-	 * Returns the color to be used the prefix. Default is yellow.
-	 * 
-	 * @return The color to use with the prefix.
-	 */
-	public ChatColor getPrefixColor()
-	{
-		return ccPrefix;
-	}
-	
-	/**
-	 * Returns whether or not spout is on the server.
-	 * 
-	 * @return true if spout is loaded, false otherwise.
-	 */
-	public boolean isSpoutEnabled()
-	{
-		return bUseSpout;
 	}
 	
 	/**
@@ -239,165 +160,6 @@ public class DispNameChanger extends JavaPlugin
 		return bChangeLogin;
 	}
 	
-	@Override
-	public void onDisable()
-	{
-		log.info(dnc_long + info_dnc_disabled);
-	}
-	
-	@Override
-	public void onEnable()
-	{
-		loadConfig();
-		
-		PluginManager pm = getServer().getPluginManager();
-		
-		pSpout = pm.getPlugin("Spout");
-		
-		formatTranslations();
-		
-		setupDatabase();
-		
-		pm.registerEvents(playerlistener, this);
-		
-		getCommand("rename").setExecutor(executor);
-		
-		getCommand("reset").setExecutor(executor);
-		
-		getCommand("check").setExecutor(executor);
-		
-		if (pSpout == null)
-		{
-			this.bUseSpout = false;
-			
-			log.info(dnc_long + info_no_spout);
-		}
-		else
-		{
-			this.bUseSpout = true;
-			
-			log.info(dnc_long + info_spout);
-		}
-		
-		log.info(dnc_long + info_dnc_enabled);
-	}
-	
-	/**
-	 * Parses all manually added color codes and changes them to actual
-	 * codes. This also appends a white (<code>&f</code>) to the name. If
-	 * the name exceeds 16 characters and ScoreBoard functionality is
-	 * enabled, this will also trim the name.
-	 * 
-	 * @param name
-	 * @return
-	 */
-	public String parseColors(String name)
-	{
-		StringBuilder sb = new StringBuilder();
-		
-		sb.append(name.replaceAll("(&([0-9a-fkA-Fk]))", "§$2"));
-		
-		String sName = sb.toString();
-		
-		for (ChatColor c : ChatColor.values())
-		{
-			if (sName.contains(c.toString()))
-			{
-				if (useScoreboard())
-				{
-					if (sb.toString().endsWith(ChatColor.WHITE.toString()))
-					{
-						System.out.println(dnc_short
-								+ "parseColors: white end!");
-						break;
-					}
-					
-					if (sb.length() > 14)
-					{
-						System.out.println(dnc_short
-								+ "parseColors: No white end!");
-						
-						sb.delete(14, sb.length());
-					}
-				}
-				
-				ChatColor ccColor = lastColorUsed(sName);
-				
-				if (c != null && ccColor == ChatColor.WHITE)
-				{
-					System.out.println(dnc_short
-							+ "parseColors: last color used!");
-					
-					break;
-				}
-				
-				sb.append(ChatColor.WHITE);
-				
-				break;
-			}
-		}
-		
-		return sb.toString();
-	}
-	
-	/**
-	 * Prefixes a nick with the prefix and shortens it if it exceeds 16
-	 * characters and scoreboard integration is enabled.
-	 * 
-	 * @param nick
-	 *            The nick to format with the Prefix.
-	 * 
-	 * @return the formated string.
-	 */
-	public String prefixNick(String nick)
-	{
-		if (nick == null)
-		{
-			throw new NullPointerException();
-		}
-		
-		String sNick = null;
-		
-		if (usePrefix() && usePrefixColor())
-		{
-			if (!nick.startsWith(sPrefix))
-			{
-				if (checkForColors(nick))
-				{
-					sNick = ccPrefix + Character.toString(cPrefix) + nick;
-				}
-				else
-				{
-					sNick = sPrefix + nick;
-				}
-			}
-		}
-		else if (usePrefix() && !usePrefixColor())
-		{
-			String prefix = Character.toString(cPrefix);
-			
-			sNick = prefix + nick;
-		}
-		else
-		{
-			sNick = nick;
-		}
-		
-		if (useScoreboard())
-		{
-			if (sNick.length() > 16)
-			{
-				sNick = sNick.substring(0, 16);
-			}
-		}
-		
-		System.out.println(dnc_short + "prefix nick: " + sNick.length());
-		
-		System.out.println(dnc_short + "prefix nick: " + sNick);
-		
-		return sNick;
-	}
-	
 	/**
 	 * Checks to see if a nick has colors in it.
 	 * 
@@ -420,26 +182,719 @@ public class DispNameChanger extends JavaPlugin
 	}
 	
 	/**
-	 * Returns the last color used in a nick.
+	 * Checks for a valid player based upon a given name.
+	 * 
+	 * @param name
+	 *            the name to check for.
+	 * 
+	 * @return an array of players matching the name.
+	 */
+	public Player[] checkName(String name)
+	{
+		if (name == null)
+		{
+			throw new IllegalArgumentException("Name can not be null.");
+		}
+		
+		Player[] players = getServer().getOnlinePlayers();
+		
+		ArrayList<Player> alPlayers = new ArrayList<Player>();
+		
+		String sName;
+		
+		String sDisplayName;
+		
+		String sTarget = name;
+		
+		if (!useScoreboard())
+		{
+			sTarget = sTarget.toLowerCase();
+		}
+		
+		for (Player p : players)
+		{
+			sName = p.getName();
+			
+			sDisplayName = p.getDisplayName();
+			
+			sDisplayName = ChatColor.stripColor(sDisplayName);
+			
+			sDisplayName = stripPrefix(sDisplayName);
+			
+			if (!useScoreboard())
+			{
+				sName = sName.toLowerCase();
+				
+				sDisplayName = sDisplayName.toLowerCase();
+			}
+			
+			if (sTarget.equals(sDisplayName))
+			{
+				alPlayers.add(p);
+			}
+			else if (sTarget.equals(sName))
+			{
+				alPlayers.add(p);
+			}
+		}
+		
+		alPlayers.trimToSize();
+		
+		if (alPlayers.size() == 0)
+		{
+			return null;
+		}
+		
+		Player[] p = new Player[alPlayers.size()];
+		
+		alPlayers.toArray(p);
+		
+		return p;
+	}
+	
+	public boolean isBroadcastAll()
+	{
+		return bBroadcastAll;
+	}
+	
+	@SuppressWarnings(
+	{ "unchecked", "rawtypes" })
+	@Override
+	public List<Class<?>> getDatabaseClasses()
+	{
+		List list = new ArrayList();
+		
+		list.add(DP.class);
+		
+		return list;
+	}
+	
+	/**
+	 * Returns the locale used by this plugin.
+	 * 
+	 * @return A locale used for translations.
+	 */
+	public Locale getLocale()
+	{
+		return locale;
+	}
+	
+	/**
+	 * Gets the localization class used for strings.
+	 * 
+	 * @return the current DNCLocalization object.
+	 */
+	public DNCLocalization getLocalization()
+	{
+		return localization;
+	}
+	
+	/**
+	 * Returns the char used as a prefix for displaynames.
+	 * 
+	 * @return a char for prefixes.
+	 */
+	public char getPrefix()
+	{
+		return cPrefix;
+	}
+	
+	/**
+	 * Returns the color to be used the prefix. Default is yellow.
+	 * 
+	 * @return The color to use with the prefix.
+	 */
+	public ChatColor getPrefixColor()
+	{
+		return ccPrefix;
+	}
+	
+	/**
+	 * Gets the current SpoutManager.
+	 * 
+	 * @return a SpoutManager.
+	 */
+	public SpoutManager getSpoutManager()
+	{
+		return spout;
+	}
+	
+	/**
+	 * Returns whether or not spout is on the server.
+	 * 
+	 * @return true if spout is loaded, false otherwise.
+	 */
+	public boolean isSpoutEnabled()
+	{
+		return bUseSpout;
+	}
+	
+	/**
+	 * Returns whether or not to globally announce name changes.
+	 * 
+	 * @return true to announce, false otherwise.
+	 */
+	public boolean useGlobalAnnounce()
+	{
+		return bGlobalAnnounce;
+	}
+	
+	/**
+	 * Returns the last color used in a string.
 	 * 
 	 * @param nick
 	 *            The nick to check
 	 * 
 	 * @return The ChatColor, or null if no colors used.
 	 */
-	public ChatColor lastColorUsed(String nick)
+	public ChatColor lastColorUsed(String input)
 	{
-		String[] saNick = nick.split(String.valueOf(ChatColor.COLOR_CHAR));
+		String[] saNick = input.split(String.valueOf(ChatColor.COLOR_CHAR));
 		
 		if (saNick.length > 1)
 		{
 			return ChatColor.getByChar(saNick[saNick.length - 1]);
 		}
-		else if (checkForColors(nick))
+		else if (checkForColors(input))
 		{
 			return ChatColor.getByChar(saNick[0]);
 		}
+		
 		return null;
+	}
+	
+	@Override
+	public void onDisable()
+	{
+		log.info(dnc_long + localization.info_dnc_disabled);
+	}
+	
+	@Override
+	public void onEnable()
+	{
+		loadConfig();
+		
+		PluginManager pm = getServer().getPluginManager();
+		
+		pSpout = pm.getPlugin("Spout");
+		
+		formatTranslations();
+		
+		setupDatabase();
+		
+		pm.registerEvents(playerlistener, this);
+		
+		for (DNCCommands cmd : DNCCommands.values())
+		{
+			getCommand(cmd.getName()).setExecutor(executor);
+		}
+		
+		if (pSpout == null)
+		{
+			this.bUseSpout = false;
+			
+			log.info(dnc_long + localization.info_no_spout);
+		}
+		else
+		{
+			this.bUseSpout = true;
+			
+			log.info(dnc_long + localization.info_spout);
+		}
+		
+		log.info(dnc_long + localization.info_dnc_enabled);
+	}
+	
+	/**
+	 * Parses a given set of arguments returning a list where each element
+	 * is one word (seperated by spaces) or a phrase (surrounded by
+	 * quotes).
+	 * 
+	 * Credit:
+	 * http://stackoverflow.com/questions/366202/regex-for-splitting
+	 * -a-string-using-space-when-not-surrounded-by-single-or-double
+	 * 
+	 * @param input
+	 *            The string to split.
+	 * 
+	 * @return An array with each word/phrase as 1 element.
+	 */
+	public String[] parseArgumentsAll(String input)
+	{
+		ArrayList<String> matchList = new ArrayList<String>();
+		
+		Pattern regex = Pattern.compile("[^\\s\"']+|\"([^\"]*)\"|'([^']*)'");
+		
+		Matcher regexMatcher = regex.matcher(input);
+		
+		while (regexMatcher.find())
+		{
+			if (regexMatcher.group(1) != null)
+			{
+				// Add double-quoted string without the quotes
+				matchList.add(regexMatcher.group(1));
+			}
+			else if (regexMatcher.group(2) != null)
+			{
+				// Add single-quoted string without the quotes
+				matchList.add(regexMatcher.group(2));
+			}
+			else
+			{
+				// Add unquoted word
+				matchList.add(regexMatcher.group());
+			}
+		}
+		
+		matchList.trimToSize();
+		
+		String[] output = new String[matchList.size()];
+		
+		matchList.toArray(output);
+		
+		return output;
+	}
+	
+	/**
+	 * Parses the argument string, returning 1 or 2 arguments matching
+	 * <target> <name>.
+	 * 
+	 * @param args
+	 *            the arguments string from the command.
+	 * 
+	 * @return A String array containing the arguments <target> and/or
+	 *         <name> in that order.
+	 */
+	public String[] parseArguments(String[] args)
+	{
+		String sTarget, sName = "";
+		
+		if (args.length == 0)
+		{
+			return null;
+		}
+		// Only one argument.
+		else if (args.length == 1)
+		{
+			sName = args[0].replace("\"", "");
+			
+			String[] sa =
+			{ sName };
+			
+			return sa;
+		}
+		// Check to see if target/name given.
+		else if (args.length == 2)
+		{
+			// Check to see if Name with Space
+			if (args[0].startsWith("\""))
+			{
+				if (!args[0].endsWith("\""))
+				{
+					sTarget = args[0] + " " + args[1];
+					
+					sTarget = sTarget.replace("\"", "");
+					
+					String[] sa =
+					{ sTarget };
+					
+					return sa;
+				}
+				else
+				{
+					sTarget = args[0].replace("\"", "");
+					
+					sName = args[1].replace("\"", "");
+					
+					String[] sa =
+					{ sTarget, sName };
+					
+					return sa;
+				}
+			}
+			// <target> + <name> given.
+			else
+			{
+				String[] sa =
+				{ args[0], args[1] };
+				
+				return sa;
+			}
+		}
+		// Arguments with spaces given.
+		else
+		{
+			// Check to see if first argument has space.
+			if (args[0].startsWith("\""))
+			{
+				sTarget = "";
+				
+				int iLoop1;
+				
+				// Look for the end quote for the first argument.
+				for (iLoop1 = 0; iLoop1 < args.length; iLoop1++)
+				{
+					sTarget += args[iLoop1];
+					
+					if (args[iLoop1].endsWith("\""))
+					{
+						break;
+					}
+					
+					sTarget += " ";
+				}
+				
+				sTarget = sTarget.replace("\"", "");
+				
+				iLoop1++;
+				
+				// Check to see if really only one argument.
+				if (iLoop1 >= args.length)
+				{
+					
+					String[] sa =
+					{ sTarget };
+					
+					return sa;
+				}
+				
+				// Parse out second argument.
+				for (int iLoop2 = iLoop1; iLoop2 < args.length; iLoop2++)
+				{
+					
+					sName += args[iLoop2] + " ";
+				}
+				
+				int iIndex = sName.lastIndexOf(" ");
+				
+				if (iIndex > -1)
+				{
+					sName = sName.substring(0, iIndex);
+				}
+				
+				sName = sName.replace("\"", "");
+				
+				String[] sa =
+				{ sTarget, sName };
+				
+				return sa;
+			}
+			// First arg doesn't have space.
+			else
+			{
+				sTarget = args[0].replace("\"", "");
+				
+				if (args[1].startsWith("\""))
+				{
+					int iLoop1 = 0;
+					
+					for (iLoop1 = 1; iLoop1 < args.length; iLoop1++)
+					{
+						sName += args[iLoop1];
+						
+						if (args[iLoop1].endsWith("\""))
+						{
+							break;
+						}
+						
+						sName += " ";
+					}
+					
+					if (iLoop1 < (args.length - 1))
+					{
+						return null;
+					}
+					
+					sName = sName.replace("\"", "");
+					
+					String[] sa =
+					{ sTarget, sName };
+					
+					return sa;
+				}
+				else
+				{
+					return null;
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Parses all manually added color codes and changes them to actual
+	 * codes. This also appends a white (<code>&f</code>) to the name.
+	 * 
+	 * @param name
+	 *            the name to parse colors for.
+	 * 
+	 * @return the resultant string, with color codes converted to proper
+	 *         format.
+	 */
+	public String parseColors(String name)
+	{
+		StringBuilder sb = new StringBuilder();
+		
+		sb.append(name.replaceAll("(&([0-9a-fkA-Fk]))", "§$2"));
+		
+		String sName = sb.toString();
+		
+		if (!checkForColors(sName))
+		{
+			return sb.toString();
+		}
+		
+		ChatColor ccColor = lastColorUsed(sName);
+		
+		if (ccColor != null && ccColor == ChatColor.WHITE)
+		{
+			return sb.toString();
+		}
+		
+		sb.append(ChatColor.WHITE);
+		
+		return sb.toString();
+	}
+	
+	/**
+	 * Prefixes a nick with the prefix. Appends prefix based upon settings.
+	 * 
+	 * @param nick
+	 *            The nick to format with the Prefix.
+	 * 
+	 * @return the formated string.
+	 */
+	public String prefixNick(String nick)
+	{
+		if (nick == null)
+		{
+			throw new NullPointerException();
+		}
+		
+		String sNick = null;
+		
+		if (usePrefix() && usePrefixColor())
+		{
+			if (nick.startsWith(sPrefixFull))
+			{
+				return nick;
+			}
+			else if (nick.startsWith(sPrefixShort))
+			{
+				return nick;
+			}
+			
+			if (startsWithColor(nick))
+			{
+				sNick = sPrefixShort + nick;
+			}
+			else
+			{
+				sNick = sPrefixFull + nick;
+			}
+		}
+		else if (usePrefix() && !usePrefixColor())
+		{
+			String prefix = Character.toString(cPrefix);
+			
+			if (nick.startsWith(prefix))
+			{
+				return nick;
+			}
+			
+			sNick = prefix + nick;
+		}
+		else
+		{
+			sNick = nick;
+		}
+		
+		return sNick;
+	}
+	
+	/**
+	 * Restores a display name for a player from the database.
+	 * 
+	 * @param player
+	 *            the player to restore the name from.
+	 */
+	public void restoreNick(Player player)
+	{
+		String sName = player.getName();
+		
+		String sDName = player.getDisplayName();
+		
+		DP pClass = (DP) getDatabase().find(DP.class).where()
+				.ieq("PlayerName", sName).findUnique();
+		
+		if (pClass == null)
+		{
+			pClass = new DP();
+			
+			pClass.setPlayerName(sName);
+			
+			pClass.setDisplayName(sDName);
+		}
+		
+		sDName = pClass.getDisplayName();
+		
+		sDName = parseColors(sDName);
+		
+		if (!sName.equals(sDName))
+		{
+			sDName = prefixNick(sDName);
+		}
+		
+		if (useScoreboard())
+		{
+			Player[] players = getServer().getOnlinePlayers();
+			
+			for (Player p : players)
+			{
+				if (player.equals(p))
+				{
+					continue;
+				}
+				
+				if (p.getDisplayName().equals(sDName))
+				{
+					sDName = pClass.getPlayerName();
+					
+					pClass.setDisplayName(sDName);
+					
+					player.sendMessage(ChatColor.RED + dnc_short
+							+ localization.info_nick_conflict);
+					
+					break;
+				}
+			}
+			
+			String sListName;
+			
+			if (sDName.length() > 16)
+			{
+				sListName = sDName.substring(0, 16);
+			}
+			else
+			{
+				sListName = sDName;
+			}
+			
+			player.setPlayerListName(sListName);
+		}
+		
+		player.setDisplayName(sDName);
+	}
+	
+	/**
+	 * Checks to see if a string starts with a color.
+	 * 
+	 * @param input
+	 *            the string to test.
+	 * 
+	 * @return true if it starts with a color. False otherwise.
+	 */
+	public boolean startsWithColor(String input)
+	{
+		for (ChatColor c : ChatColor.values())
+		{
+			if (input.startsWith(c.toString()))
+			{
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * Stores the player's display name to the database if it is different
+	 * from the login name.
+	 * 
+	 * @param player
+	 *            The player to store the display name for.
+	 */
+	public void storeNick(Player player)
+	{
+		String sName = player.getName();
+		
+		String sDName = player.getDisplayName();
+		
+		if (sName.equals(sDName))
+		{
+			return;
+		}
+		
+		sDName = stripPrefix(sDName);
+		
+		DP pClass = (DP) getDatabase().find(DP.class).where()
+				.ieq("PlayerName", sName).findUnique();
+		
+		if (pClass == null)
+		{
+			pClass = new DP();
+			
+			pClass.setPlayerName(sName);
+			
+			pClass.setDisplayName(sDName);
+		}
+		else
+		{
+			pClass.setDisplayName(sDName);
+		}
+		
+		getDatabase().save(pClass);
+	}
+	
+	/**
+	 * Strips the prefix from a name. Can be called with prefix option
+	 * disabled.
+	 * 
+	 * @param nick
+	 *            the nick to strip.
+	 * 
+	 * @return the name without the prefix.
+	 */
+	public String stripPrefix(String nick)
+	{
+		String sNick = nick;
+		
+		String prefix = Character.toString(cPrefix);
+		
+		if (usePrefix() && usePrefixColor())
+		{
+			if (sNick.startsWith(sPrefixFull))
+			{
+				sNick = sNick.substring(sPrefixFull.length());
+			}
+			else if (sNick.startsWith(ccPrefix + Character.toString(cPrefix)))
+			{
+				sNick = sNick.substring((ccPrefix + Character
+						.toString(cPrefix)).length());
+			}
+			else
+			{
+				if (sNick.contains(prefix))
+				{
+					String[] split = Pattern.compile(Pattern.quote(prefix))
+							.split(sNick, 2);
+					
+					sNick = split[0] + split[1];
+				}
+			}
+		}
+		else if (usePrefix() && !usePrefixColor())
+		{
+			
+			if (sNick.contains(prefix))
+			{
+				String[] split = Pattern.compile(Pattern.quote(prefix)).split(
+						sNick, 2);
+				
+				sNick = split[0] + split[1];
+			}
+		}
+		
+		return sNick;
 	}
 	
 	/**
@@ -473,47 +928,6 @@ public class DispNameChanger extends JavaPlugin
 	}
 	
 	/**
-	 * Strips the prefix from a name. Can be called with prefix option
-	 * disabled.
-	 * 
-	 * @param nick
-	 *            the nick to strip.
-	 * 
-	 * @return the name without the prefix.
-	 */
-	public String stripPrefix(String nick)
-	{
-		String sNick = nick;
-		
-		if (usePrefix() && usePrefixColor())
-		{
-			if (sNick.startsWith(sPrefix))
-			{
-				sNick = sNick.substring(sPrefix.length());
-			}
-			else if (sNick.startsWith(ccPrefix + Character.toString(cPrefix)))
-			{
-				sNick = sNick.substring((ccPrefix + Character
-						.toString(cPrefix)).length());
-			}
-		}
-		else if (usePrefix() && !usePrefixColor())
-		{
-			String prefix = Character.toString(cPrefix);
-			
-			if (sNick.contains(prefix))
-			{
-				String[] split = Pattern.compile(Pattern.quote(prefix)).split(
-						sNick, 2);
-				
-				sNick = split[0] + split[1];
-			}
-		}
-		
-		return sNick;
-	}
-	
-	/**
 	 * Returns the current plugin instance.
 	 * 
 	 * @return the DispNameChanger plugin.
@@ -523,7 +937,7 @@ public class DispNameChanger extends JavaPlugin
 		return instance;
 	}
 	
-	/*
+	/**
 	 * Formats translations strings with their respective arguments.
 	 */
 	private void formatTranslations()
@@ -561,24 +975,24 @@ public class DispNameChanger extends JavaPlugin
 		
 		formatter.setLocale(locale);
 		
-		formatter.applyPattern(info_spout);
+		formatter.applyPattern(localization.info_spout);
 		
-		info_spout = formatter.format(spoutArgs);
+		localization.info_spout = formatter.format(spoutArgs);
 		
-		formatter.applyPattern(info_dnc_enabled);
+		formatter.applyPattern(localization.info_dnc_enabled);
 		
-		info_dnc_enabled = formatter.format(dncArgs);
+		localization.info_dnc_enabled = formatter.format(dncArgs);
 		
-		formatter.applyPattern(info_dnc_disabled);
+		formatter.applyPattern(localization.info_dnc_disabled);
 		
-		info_dnc_disabled = formatter.format(dncArgs);
+		localization.info_dnc_disabled = formatter.format(dncArgs);
 		
-		formatter.applyPattern(info_db_make);
+		formatter.applyPattern(localization.info_db_make);
 		
-		info_db_make = formatter.format(dncArgs);
+		localization.info_db_make = formatter.format(dncArgs);
 	}
 	
-	/*
+	/**
 	 * Load the configuration settings and localization files for DNC.
 	 */
 	private void loadConfig()
@@ -600,6 +1014,23 @@ public class DispNameChanger extends JavaPlugin
 		bChangeLogin = conf.getBoolean("messages.login");
 		
 		bChangeKick = conf.getBoolean("messages.kick");
+		
+		bGlobalAnnounce = conf.getBoolean("global-announce.enabled");
+		
+		String sAnnounce = conf.getString("global-announce.target");
+		
+		if(sAnnounce == null)
+		{
+			bBroadcastAll = true;
+		}
+		else if(sAnnounce.equalsIgnoreCase("all"))
+		{
+			bBroadcastAll = true;
+		}
+		else if(sAnnounce.equalsIgnoreCase("admin"))
+		{
+			bBroadcastAll = false;
+		}
 		
 		bUsePrefix = conf.getBoolean("prefix.enabled");
 		
@@ -630,7 +1061,10 @@ public class DispNameChanger extends JavaPlugin
 		
 		if (usePrefixColor())
 		{
-			sPrefix = ccPrefix + Character.toString(cPrefix) + ChatColor.WHITE;
+			sPrefixFull = ccPrefix + Character.toString(cPrefix)
+					+ ChatColor.WHITE;
+			
+			sPrefixShort = ccPrefix + Character.toString(cPrefix);
 		}
 		
 		bUseScoreboard = conf.getBoolean("scoreboard");
@@ -670,50 +1104,10 @@ public class DispNameChanger extends JavaPlugin
 			log.severe(e.getMessage());
 		}
 		
-		loadTranslations();
+		localization.loadTranslations();
 	}
 	
-	/*
-	 * Load Translations
-	 */
-	private void loadTranslations()
-	{
-		ResourceBundle dncStrings = ResourceBundle.getBundle(
-				"translations/DNCStrings", Locale.ENGLISH);
-		
-		permission_spaces = dncStrings.getString("permission_spaces");
-		permission_other = dncStrings.getString("permission_other");
-		permission_use = dncStrings.getString("permission_use");
-		permission_check = dncStrings.getString("permission_check");
-		
-		error_multi_match = dncStrings.getString("error_multi_match");
-		error_bad_user = dncStrings.getString("error_bad_user");
-		error_non_unique = dncStrings.getString("error_non_unique");
-		error_max_length = dncStrings.getString("error_max_length");
-		error_console = dncStrings.getString("error_console");
-		error_console_rename = dncStrings.getString("error_console_rename");
-		error_bad_args = dncStrings.getString("error_bad_args");
-		
-		info_check_multi = dncStrings.getString("info_check_multi");
-		info_check_multi_list = dncStrings.getString("info_check_multi_list");
-		info_check_single = dncStrings.getString("info_check_single");
-		info_nick_conflict = dncStrings.getString("info_nick_conflict");
-		info_nick_target = dncStrings.getString("info_nick_target");
-		info_nick_caller = dncStrings.getString("info_nick_caller");
-		info_player_death = dncStrings.getString("info_player_death");
-		info_player_join = dncStrings.getString("info_player_join");
-		info_player_kick = dncStrings.getString("info_player_kick");
-		info_player_quit = dncStrings.getString("info_player_quit");
-		info_spout_target = dncStrings.getString("info_spout_target");
-		info_spout_caller = dncStrings.getString("info_spout_caller");
-		info_spout = dncStrings.getString("info_spout");
-		info_no_spout = dncStrings.getString("info_no_spout");
-		info_dnc_enabled = dncStrings.getString("info_dnc_enabled");
-		info_dnc_disabled = dncStrings.getString("info_dnc_disabled");
-		info_db_make = dncStrings.getString("info_db_make");
-	}
-	
-	/*
+	/**
 	 * Tries to load the database, and if unable to find it, creates a new
 	 * one.
 	 */
@@ -725,7 +1119,7 @@ public class DispNameChanger extends JavaPlugin
 		}
 		catch (PersistenceException ex)
 		{
-			log.info(dnc_long + info_db_make);
+			log.info(dnc_long + localization.info_db_make);
 			
 			installDDL();
 		}

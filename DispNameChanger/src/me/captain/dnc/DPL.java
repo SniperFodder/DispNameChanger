@@ -1,13 +1,18 @@
 package me.captain.dnc;
 
 import java.text.MessageFormat;
+import java.util.HashMap;
+import java.util.List;
+import java.util.logging.Logger;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -22,9 +27,15 @@ import org.getspout.spoutapi.player.SpoutPlayer;
  */
 public class DPL implements Listener
 {
+	private static final Logger log = Bukkit.getLogger();
+	
+	private HashMap<String, Integer> entityID;
+	
 	private DispNameChanger plugin;
 	
 	private MessageFormat formatter;
+	
+	private DNCLocalization locale;
 	
 	/**
 	 * Constructs a new DispNameChange Player Listener.
@@ -32,12 +43,23 @@ public class DPL implements Listener
 	 * @param plugin
 	 *            the plugin that created this listener.
 	 */
-	public DPL(DispNameChanger plugin)
+	public DPL()
 	{
-		this.plugin = plugin;
+		plugin = DispNameChanger.getInstance();
+		
+		locale = plugin.getLocalization();
 		
 		formatter = new MessageFormat("");
+		
+		entityID = new HashMap<String, Integer>();
 	}
+	
+	/**
+	 * Triggered on player death.
+	 * 
+	 * @param event
+	 *            the event triggered by the death.
+	 */
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onPlayerDeath(final PlayerDeathEvent event)
 	{
@@ -45,27 +67,35 @@ public class DPL implements Listener
 		
 		if (plugin.changeDeath())
 		{
-			Object[] user = { player.getDisplayName() };
+			Object[] user =
+			{ player.getDisplayName() };
 			
-			formatter.applyPattern(plugin.info_player_death);
+			formatter.applyPattern(locale.info_player_death);
 			
 			event.setDeathMessage(formatter.format(user));
 		}
 	}
 	
+	/**
+	 * Triggered whenever a player has joined the server.
+	 * 
+	 * @param event
+	 */
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onPlayerJoin(final PlayerJoinEvent event)
 	{
 		Player player = event.getPlayer();
 		
-		restoreNick(player);
+		entityID.put(player.getName(), new Integer(player.getEntityId()));
+		
+		plugin.restoreNick(player);
 		
 		if (plugin.changeLogin())
 		{
 			Object[] user =
 			{ event.getPlayer().getDisplayName(), ChatColor.YELLOW };
 			
-			formatter.applyPattern(plugin.info_player_join);
+			formatter.applyPattern(locale.info_player_join);
 			
 			event.setJoinMessage(ChatColor.YELLOW + formatter.format(user));
 		}
@@ -78,6 +108,12 @@ public class DPL implements Listener
 		}
 	}
 	
+	/**
+	 * Triggered whenever a player is kicked from the server.
+	 * 
+	 * @param event
+	 *            The event triggered by the action.
+	 */
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onPlayerKick(final PlayerKickEvent event)
 	{
@@ -86,125 +122,257 @@ public class DPL implements Listener
 			return;
 		}
 		
-		storeNick(event.getPlayer());
+		Player player = event.getPlayer();
+		
+		if (event.isCancelled())
+		{
+			return;
+		}
+		
+		int iEntityID = player.getEntityId();
+		
+		int iStoredID = entityID.get(player.getName()).intValue();
+		
+		if (iEntityID == iStoredID)
+		{
+			plugin.storeNick(player);
+			
+			entityID.remove(player.getName());
+		}
 		
 		if (plugin.changeKick())
 		{
 			Object[] user =
-			{ event.getPlayer().getDisplayName(), ChatColor.YELLOW };
+			{ player.getDisplayName(), ChatColor.YELLOW };
 			
-			formatter.applyPattern(plugin.info_player_kick);
+			formatter.applyPattern(locale.info_player_kick);
 			
 			event.setLeaveMessage(ChatColor.YELLOW + formatter.format(user));
 		}
 	}
-
+	
+	/**
+	 * Called whenever the player quits the server.
+	 * 
+	 * @param event
+	 *            the event triggered by the action.
+	 */
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onPlayerQuit(final PlayerQuitEvent event)
 	{
-		storeNick(event.getPlayer());
+		Player player = event.getPlayer();
+		
+		int iEntityID = player.getEntityId();
+		
+		int iStoredID = entityID.get(player.getName()).intValue();
+		
+		if (iEntityID == iStoredID)
+		{
+			plugin.storeNick(player);
+			
+			entityID.remove(player.getName());
+		}
 		
 		if (plugin.changeLogin())
 		{
 			Object[] user =
-			{ event.getPlayer().getDisplayName(), ChatColor.YELLOW };
+			{ player.getDisplayName(), ChatColor.YELLOW };
 			
-			formatter.applyPattern(plugin.info_player_quit);
+			formatter.applyPattern(locale.info_player_quit);
 			
 			event.setQuitMessage(ChatColor.YELLOW + formatter.format(user));
 			
 		}
 	}
 	
-	private void restoreNick(Player player)
+	/**
+	 * Changes any display names to real names in any commands a user sends
+	 * to the server.
+	 * 
+	 * @param event
+	 *            The event that was triggered by sending a command.
+	 */
+	@EventHandler(priority = EventPriority.HIGHEST)
+	public void onCommandPreprocess(PlayerCommandPreprocessEvent event)
 	{
-		String sName = player.getName();
+		/*
+		 * TODO This does not handle Console Events. Re-write to handle ServerCommandEvent.
+		 */
+		Player player = event.getPlayer();
 		
-		String sDName = player.getDisplayName();
+		StringBuilder sbCommand = null;
 		
-		DP pClass = (DP) plugin.getDatabase().find(DP.class).where()
-				.ieq("PlayerName", sName).findUnique();
+		Player[] target;
 		
-		if (pClass == null)
+		String[] args = event.getMessage().split(" ");
+		
+		// Ensure that we aren't matching our command.
+		if (args[0].startsWith("/"))
 		{
-			pClass = new DP();
 			
-			pClass.setPlayerName(sName);
-			
-			pClass.setDisplayName(sDName);
-		}
-		
-		sDName = pClass.getDisplayName();
-		
-		sDName = plugin.parseColors(sDName);
-		
-		if(!sName.equals(sDName))
-		{
-			sDName = plugin.prefixNick(sDName);
-		}
-		
-		System.out.println(plugin.dnc_short +  "restorenick: " + sDName);
-
-		if (plugin.useScoreboard())
-		{
-			Player[] players = this.plugin.getServer().getOnlinePlayers();
-			
-			for (Player p : players)
+			if (checkCommands(args[0]))
 			{
-				if (player.equals(p))
+				
+				return;
+			}
+		}
+		
+		switch (args.length)
+		{
+		// Whatever it is, it can't have a DispName
+		case 1:
+			break;
+		// Possible command + DispName
+		case 2:
+			target = plugin.checkName(args[1]);
+			
+			if (target == null)
+			{
+				break;
+			}
+			
+			switch (target.length)
+			{
+			case 0:
+				break;
+			case 1:
+				if (!target[0].getName().equalsIgnoreCase(args[1]))
 				{
+					sbCommand = new StringBuilder();
+					
+					sbCommand.append(args[0]).append(" ")
+							.append(target[0].getName());
+					
+					break;
+				}
+				break;
+			default:
+				event.setCancelled(true);
+				
+				player.sendMessage(ChatColor.RED + plugin.dnc_short
+						+ locale.error_multi_match);
+			}
+			break;
+		// Possible Command + Multipart DispName
+		default:
+			String[] saArgs = event.getMessage().split(" ", 2);
+			
+			String[] saParsed = plugin.parseArgumentsAll(saArgs[1]);
+			
+			boolean bNamesAdded = false;
+			
+			sbCommand = new StringBuilder();
+			
+			sbCommand.append(args[0]).append(" ");
+			
+			for (String s : saParsed)
+			{
+				target = plugin.checkName(s);
+				
+				if (target == null)
+				{
+					sbCommand.append(s).append(" ");
+					
 					continue;
 				}
 				
-				if (p.getDisplayName().equals(sDName))
+				switch (target.length)
 				{
-					sDName = pClass.getPlayerName();
+				case 1:
 					
-					pClass.setDisplayName(sDName);
+					if (!target[0].getName().equalsIgnoreCase(s))
+					{
+						
+						sbCommand.append(target[0].getName()).append(" ");
+						
+						bNamesAdded = true;
+					}
+					else
+					{
+						
+						sbCommand.append(s).append(" ");
+					}
+					break;
+				default:
+					
+					event.setCancelled(true);
 					
 					player.sendMessage(ChatColor.RED + plugin.dnc_short
-							+ plugin.info_nick_conflict);
+							+ locale.error_multi_match);
+					
+					sbCommand = null;
+					
+					bNamesAdded = false;
 					
 					break;
 				}
 			}
 			
-			if(sDName.length() > 16)
+			if (bNamesAdded == false)
 			{
-				sDName = sDName.substring(0, 16);
+				sbCommand = null;
 			}
-			
-			player.setPlayerListName(sDName);
 		}
 		
-		player.setDisplayName(sDName);
-	}
-
-	private void storeNick(Player player)
-	{
-		String sName = player.getName();
-		
-		String sDName = player.getDisplayName();
-		
-		sDName = plugin.stripPrefix(sDName);
-		
-		DP pClass = (DP) plugin.getDatabase().find(DP.class).where()
-				.ieq("PlayerName", sName).findUnique();
-		
-		if (pClass == null)
+		if (sbCommand != null)
 		{
-			pClass = new DP();
+			event.setCancelled(true);
 			
-			pClass.setPlayerName(sName);
+			player.chat(sbCommand.toString());
 			
-			pClass.setDisplayName(sDName);
+			StringBuilder sb = new StringBuilder();
+			
+			sb.append(plugin.dnc_long).append("Converted |")
+					.append(event.getMessage()).append("| to |")
+					.append(sbCommand.toString()).append("|.");
+			
+			log.info(sb.toString());
+		}
+	}
+	
+	/**
+	 * Checks to see if a command matches one of the current plugin
+	 * commands.
+	 * 
+	 * @param command
+	 *            the command to check for.
+	 * 
+	 * @return true if the command matches, false otherwise.
+	 */
+	private boolean checkCommands(String command)
+	{
+		String sCommand;
+		
+		if (command.startsWith("/"))
+		{
+			sCommand = command.substring(1);
 		}
 		else
 		{
-			pClass.setDisplayName(sDName);
+			sCommand = command;
 		}
 		
-		plugin.getDatabase().save(pClass);
+		List<String> aliases;
+		
+		for (DNCCommands cmd : DNCCommands.values())
+		{
+			if (cmd.getName().equalsIgnoreCase(sCommand))
+			{
+				return true;
+			}
+			
+			aliases = plugin.getCommand(cmd.getName()).getAliases();
+			
+			for (String s : aliases)
+			{
+				if (s.equalsIgnoreCase(sCommand))
+				{
+					return true;
+				}
+			}
+		}
+		
+		return false;
 	}
 	
 }
