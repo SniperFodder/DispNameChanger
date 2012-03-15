@@ -124,11 +124,6 @@ public class DPL implements Listener
 		
 		Player player = event.getPlayer();
 		
-		if (event.isCancelled())
-		{
-			return;
-		}
-		
 		int iEntityID = player.getEntityId();
 		
 		int iStoredID = entityID.get(player.getName()).intValue();
@@ -137,7 +132,7 @@ public class DPL implements Listener
 		{
 			plugin.storeNick(player);
 			
-			entityID.remove(player.getName());
+			entityID.put(player.getName(), -1);
 		}
 		
 		if (plugin.changeKick())
@@ -170,6 +165,10 @@ public class DPL implements Listener
 		{
 			plugin.storeNick(player);
 			
+			entityID.remove(player.getName());
+		}
+		else if(iEntityID == -1)
+		{
 			entityID.remove(player.getName());
 		}
 		
