@@ -20,6 +20,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.getspout.spoutapi.SpoutManager;
+import org.getspout.spoutapi.player.SpoutPlayer;
 
 /**
  * Allows a user to change their display name, or the display name of
@@ -783,6 +784,13 @@ public class DispNameChanger extends JavaPlugin
 		}
 		
 		player.setDisplayName(sDName);
+		
+		if(isSpoutEnabled())
+		{
+			SpoutPlayer spoutPlayer = (SpoutPlayer) player;
+			
+			spoutPlayer.setTitle(sDName);
+		}
 	}
 	
 	/**
