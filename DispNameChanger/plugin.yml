@@ -1,6 +1,6 @@
 ##  Plugin Information  ##
 name: DispNameChanger
-version: 5.4.1
+version: 5.4.2
 description: Lets you change the display name of yourself or others.
 ##  Original Author     ##
 author: captainawesome7
@@ -16,6 +16,7 @@ commands:
         description: Changes the name of the player or target.
         permission: dispname.change
         usage: |
+            Surround names with spaces in quotes (i.e. "Super Bob").
             /rename <target> <new name>
             /rename <new name>
             Aliases: newname
