@@ -73,7 +73,7 @@ public class DPL implements Listener
 			Object[] user =
 			{ player.getDisplayName() };
 			
-			formatter.applyPattern(locale.info_player_death);
+			formatter.applyPattern(locale.getString(DNCStrings.INFO_PLAYER_DEATH));
 			
 			event.setDeathMessage(formatter.format(user));
 		}
@@ -98,7 +98,7 @@ public class DPL implements Listener
 			Object[] user =
 			{ event.getPlayer().getDisplayName(), ChatColor.YELLOW };
 			
-			formatter.applyPattern(locale.info_player_join);
+			formatter.applyPattern(locale.getString(DNCStrings.INFO_PLAYER_JOIN));
 			
 			event.setJoinMessage(ChatColor.YELLOW + formatter.format(user));
 		}
@@ -143,7 +143,7 @@ public class DPL implements Listener
 			Object[] user =
 			{ player.getDisplayName(), ChatColor.YELLOW };
 			
-			formatter.applyPattern(locale.info_player_kick);
+			formatter.applyPattern(locale.getString(DNCStrings.INFO_PLAYER_KICK));
 			
 			event.setLeaveMessage(ChatColor.YELLOW + formatter.format(user));
 		}
@@ -180,7 +180,7 @@ public class DPL implements Listener
 			Object[] user =
 			{ player.getDisplayName(), ChatColor.YELLOW };
 			
-			formatter.applyPattern(locale.info_player_quit);
+			formatter.applyPattern(locale.getString(DNCStrings.INFO_PLAYER_QUIT));
 			
 			event.setQuitMessage(ChatColor.YELLOW + formatter.format(user));
 			
@@ -270,7 +270,7 @@ public class DPL implements Listener
 				event.setCancelled(true);
 				
 				player.sendMessage(ChatColor.RED + plugin.dnc_short
-						+ locale.error_multi_match);
+						+ locale.getString(DNCStrings.ERROR_MULTI_MATCH));
 			}
 			break;
 		// Possible Command + Multipart DispName
@@ -318,7 +318,7 @@ public class DPL implements Listener
 					event.setCancelled(true);
 					
 					player.sendMessage(ChatColor.RED + plugin.dnc_short
-							+ locale.error_multi_match);
+							+ locale.getString(DNCStrings.ERROR_MULTI_MATCH));
 					
 					sbCommand = null;
 					
