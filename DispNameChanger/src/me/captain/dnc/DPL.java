@@ -170,7 +170,7 @@ public class DPL implements Listener
 			
 			entityID.remove(player.getName());
 		}
-		else if(iEntityID == -1)
+		else if (iEntityID == -1)
 		{
 			entityID.remove(player.getName());
 		}
@@ -187,12 +187,21 @@ public class DPL implements Listener
 		}
 	}
 	
+	/**
+	 * Handles setting the title for each player after they join the
+	 * server.
+	 * 
+	 * @param event
+	 *            the event triggered when a player with SpoutCraft joins
+	 *            the server.
+	 */
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onSpoutCraftEnable(SpoutCraftEnableEvent event)
 	{
 		// TODO Fix this when Spout fixes their damn code.
 		
-		plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new RenameTask(), 150L);
+		plugin.getServer().getScheduler()
+				.scheduleSyncDelayedTask(plugin, new RenameTask(), 150L);
 	}
 	
 	/**
@@ -206,7 +215,8 @@ public class DPL implements Listener
 	public void onCommandPreprocess(PlayerCommandPreprocessEvent event)
 	{
 		/*
-		 * TODO This does not handle Console Events. Re-write to handle ServerCommandEvent.
+		 * TODO This does not handle Console Events. Re-write to handle
+		 * ServerCommandEvent.
 		 */
 		Player player = event.getPlayer();
 		
@@ -386,9 +396,10 @@ public class DPL implements Listener
 	}
 	
 	/**
+	 * Handles setting the title for everyone when a new player joins.
 	 * 
 	 * @author Mark 'SniperFodder' Gunnett
-	 *
+	 * 
 	 */
 	private class RenameTask extends TimerTask
 	{
@@ -397,9 +408,9 @@ public class DPL implements Listener
 		{
 			SpoutPlayer[] onlinePlayers = SpoutManager.getOnlinePlayers();
 			
-			for(SpoutPlayer p: onlinePlayers)
+			for (SpoutPlayer p : onlinePlayers)
 			{
-				if(!p.getName().equals(p.getDisplayName()))
+				if (!p.getName().equals(p.getDisplayName()))
 				{
 					p.setTitle(p.getDisplayName());
 				}
