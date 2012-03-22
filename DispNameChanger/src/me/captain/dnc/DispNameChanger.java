@@ -253,6 +253,11 @@ public class DispNameChanger extends JavaPlugin
 		return p;
 	}
 	
+	/**
+	 * Checks whether nick changes are broadcast to all or admins only.
+	 * 
+	 * @return True if everyone should receive broadcast, false otherwise.
+	 */
 	public boolean isBroadcastAll()
 	{
 		return bBroadcastAll;
@@ -657,7 +662,8 @@ public class DispNameChanger extends JavaPlugin
 	}
 	
 	/**
-	 * Prefixes a nick with the prefix. Appends prefix based upon settings.
+	 * Prefixes a nick with the prefix. Prepends prefix based upon
+	 * settings.
 	 * 
 	 * @param nick
 	 *            The nick to format with the Prefix.
@@ -785,7 +791,7 @@ public class DispNameChanger extends JavaPlugin
 		
 		player.setDisplayName(sDName);
 		
-		if(isSpoutEnabled())
+		if (isSpoutEnabled())
 		{
 			SpoutPlayer spoutPlayer = (SpoutPlayer) player;
 			
@@ -816,7 +822,8 @@ public class DispNameChanger extends JavaPlugin
 	
 	/**
 	 * Stores the player's display name to the database if it is different
-	 * from the login name.
+	 * from the login name. Strips out all database information when a nick
+	 * is reset.
 	 * 
 	 * @param player
 	 *            The player to store the display name for.
@@ -827,15 +834,20 @@ public class DispNameChanger extends JavaPlugin
 		
 		String sDName = player.getDisplayName();
 		
-		if (sName.equals(sDName))
-		{
-			return;
-		}
-		
 		sDName = stripPrefix(sDName);
 		
 		DP pClass = (DP) getDatabase().find(DP.class).where()
 				.ieq("PlayerName", sName).findUnique();
+		
+		if (sName.equals(sDName))
+		{
+			if (pClass != null)
+			{
+				getDatabase().delete(pClass);
+			}
+			
+			return;
+		}
 		
 		if (pClass == null)
 		{
@@ -1027,15 +1039,15 @@ public class DispNameChanger extends JavaPlugin
 		
 		String sAnnounce = conf.getString("global-announce.target");
 		
-		if(sAnnounce == null)
+		if (sAnnounce == null)
 		{
 			bBroadcastAll = true;
 		}
-		else if(sAnnounce.equalsIgnoreCase("all"))
+		else if (sAnnounce.equalsIgnoreCase("all"))
 		{
 			bBroadcastAll = true;
 		}
-		else if(sAnnounce.equalsIgnoreCase("admin"))
+		else if (sAnnounce.equalsIgnoreCase("admin"))
 		{
 			bBroadcastAll = false;
 		}

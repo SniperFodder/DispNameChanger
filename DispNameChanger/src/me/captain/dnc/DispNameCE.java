@@ -16,7 +16,7 @@ import org.getspout.spoutapi.player.SpoutPlayer;
  * 
  * Valid commands:aliases that this executor handles are
  * <code>'rename':'newname'</code>, <code>'reset':'resetname'</code>, and
- * <code>'check':'checkname':'namecheck':'realname'</code>.
+ * <code>'check':'checkname', 'namecheck', 'realname'</code>.
  * 
  * @author captainawesome7, itsatacoshop247, Daxiongmao87, Luke Zwekii,
  *         Sammy, SniperFodder
@@ -121,9 +121,18 @@ public class DispNameCE implements CommandExecutor
 		return p.hasPermission("dispname.changeother");
 	}
 	
+	/**
+	 * Checks to see if the given player has the 'dispname.announce'
+	 * permission for nick broadcasts.
+	 * 
+	 * @param p
+	 *            the player to check.
+	 * 
+	 * @return true if they have it, false otherwise.
+	 */
 	public boolean canBroadcast(Player p)
 	{
-		if(p == null)
+		if (p == null)
 		{
 			return true;
 		}
@@ -727,7 +736,7 @@ public class DispNameCE implements CommandExecutor
 		{
 			Player[] exclude;
 			
-			if(caller != null)
+			if (caller != null)
 			{
 				exclude = new Player[2];
 				
@@ -744,7 +753,7 @@ public class DispNameCE implements CommandExecutor
 			
 			Player[] targets = getAnnounceTargets(exclude);
 			
-			if(targets != null)
+			if (targets != null)
 			{
 				sbCaller = new StringBuilder();
 				
@@ -753,18 +762,18 @@ public class DispNameCE implements CommandExecutor
 				sbCaller.append(ChatColor.GREEN).append(plugin.dnc_short)
 						.append(formatter.format(users));
 				
-				if(plugin.isBroadcastAll())
+				if (plugin.isBroadcastAll())
 				{
-					for(Player p: targets)
+					for (Player p : targets)
 					{
 						p.sendMessage(sbCaller.toString());
 					}
 				}
 				else
 				{
-					for(Player p: targets)
+					for (Player p : targets)
 					{
-						if(canBroadcast(p))
+						if (canBroadcast(p))
 						{
 							p.sendMessage(sbCaller.toString());
 						}
@@ -777,26 +786,32 @@ public class DispNameCE implements CommandExecutor
 	}
 	
 	/**
-	 * Takes an arrya of players
+	 * Takes an array of players to match against, and returns all players
+	 * not in the given array.
+	 * 
 	 * @param exclude
-	 * @return
+	 *            Array of players to exclude from resulting array.
+	 * 
+	 * @return An array of players that excludes the given array, or null
+	 *         if no players found other than those in the array.
 	 */
 	private Player[] getAnnounceTargets(Player[] exclude)
 	{
 		if (exclude == null || exclude.length == 0)
 		{
-			throw new IllegalArgumentException("Exclude can not be null or of length 0.");
+			throw new IllegalArgumentException(
+					"Exclude can not be null or of length 0.");
 		}
 		
 		ArrayList<Player> targets = new ArrayList<Player>();
 		
 		Player[] onlinePlayers = plugin.getServer().getOnlinePlayers();
 		
-		for (Player online: onlinePlayers)
+		for (Player online : onlinePlayers)
 		{
-			for(Player p: exclude)
+			for (Player p : exclude)
 			{
-				if(!p.equals(online))
+				if (!p.equals(online))
 				{
 					targets.add(online);
 				}
@@ -805,7 +820,7 @@ public class DispNameCE implements CommandExecutor
 		
 		targets.trimToSize();
 		
-		if(targets.size() > 0)
+		if (targets.size() > 0)
 		{
 			Player[] result = new Player[targets.size()];
 			

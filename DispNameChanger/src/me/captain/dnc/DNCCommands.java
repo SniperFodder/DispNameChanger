@@ -1,5 +1,11 @@
 package me.captain.dnc;
 
+/**
+ * Used for the checking and registering of commands in DNC.
+ * 
+ * @author Mark 'SniperFodder' Gunnett
+ * 
+ */
 public enum DNCCommands
 {
 	/**
