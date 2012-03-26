@@ -3,7 +3,6 @@ package me.captain.dnc;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.List;
-import java.util.TimerTask;
 import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
@@ -17,8 +16,6 @@ import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.getspout.spoutapi.SpoutManager;
-import org.getspout.spoutapi.event.spout.SpoutCraftEnableEvent;
 import org.getspout.spoutapi.player.SpoutPlayer;
 
 /**
@@ -185,23 +182,6 @@ public class DPL implements Listener
 			event.setQuitMessage(ChatColor.YELLOW + formatter.format(user));
 			
 		}
-	}
-	
-	/**
-	 * Handles setting the title for each player after they join the
-	 * server.
-	 * 
-	 * @param event
-	 *            the event triggered when a player with SpoutCraft joins
-	 *            the server.
-	 */
-	@EventHandler(priority = EventPriority.HIGHEST)
-	public void onSpoutCraftEnable(SpoutCraftEnableEvent event)
-	{
-		// TODO Fix this when Spout fixes their damn code.
-		
-		plugin.getServer().getScheduler()
-				.scheduleSyncDelayedTask(plugin, new RenameTask(), 150L);
 	}
 	
 	/**
@@ -393,29 +373,5 @@ public class DPL implements Listener
 		}
 		
 		return false;
-	}
-	
-	/**
-	 * Handles setting the title for everyone when a new player joins.
-	 * 
-	 * @author Mark 'SniperFodder' Gunnett
-	 * 
-	 */
-	private class RenameTask extends TimerTask
-	{
-		@Override
-		public void run()
-		{
-			SpoutPlayer[] onlinePlayers = SpoutManager.getOnlinePlayers();
-			
-			for (SpoutPlayer p : onlinePlayers)
-			{
-				if (!p.getName().equals(p.getDisplayName()))
-				{
-					p.setTitle(p.getDisplayName());
-				}
-			}
-			
-		}
 	}
 }

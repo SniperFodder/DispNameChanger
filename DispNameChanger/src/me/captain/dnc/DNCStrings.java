@@ -127,6 +127,36 @@ public enum DNCStrings
 	PERMISSION_CHECK,
 	
 	/**
+	 * Error about using Bold color code.
+	 */
+	PERMISSION_COLOR_BOLD,
+	
+	/**
+	 * Error about using Italic Color Code.
+	 */
+	PERMISSION_COLOR_ITALIC,
+	
+	/**
+	 * Error about using Magic Color Code.
+	 */
+	PERMISSION_COLOR_MAGIC,
+	
+	/**
+	 * Error about using Strikethrough color code.
+	 */
+	PERMISSION_COLOR_STRIKETHROUGH,
+	
+	/**
+	 * Error about using Underline color code.
+	 */
+	PERMISSION_COLOR_UNDERLINE,
+	
+	/**
+	 * Error about listing display names.
+	 */
+	PERMISSION_LIST,
+	
+	/**
 	 * Error about changing other player's names.
 	 */
 	PERMISSION_OTHER,

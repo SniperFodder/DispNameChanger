@@ -3,6 +3,7 @@ package me.captain.dnc;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
@@ -49,6 +50,44 @@ public class DispNameCE implements CommandExecutor
 		formatter.setLocale(plugin.getLocale());
 	}
 	
+	/**
+	 * Checks to see if the given player has the 'dispname.announce'
+	 * permission for nick broadcasts.
+	 * 
+	 * @param p
+	 *            the player to check.
+	 * 
+	 * @return true if they have it, false otherwise.
+	 */
+	public boolean canBroadcast(Player p)
+	{
+		if (p == null)
+		{
+			return true;
+		}
+		
+		return p.hasPermission("dispname.announce");
+	}
+
+	/**
+	 * Checks to see if the given player has the 'dispname.color.bold'
+	 * permission for color code usage.
+	 * 
+	 * @param p
+	 *            the player to check.
+	 * 
+	 * @return true if they have it, false otherwise.
+	 */
+	public boolean canUseBoldColor(Player p)
+	{
+		if (p == null)
+		{
+			return true;
+		}
+		
+		return p.hasPermission("dispname.color.bold");
+	}
+
 	/**
 	 * Checks to see if the Player can use the command.
 	 * 
@@ -122,22 +161,97 @@ public class DispNameCE implements CommandExecutor
 	}
 	
 	/**
-	 * Checks to see if the given player has the 'dispname.announce'
-	 * permission for nick broadcasts.
+	 * Checks to see if the player can use the list command.
 	 * 
 	 * @param p
-	 *            the player to check.
+	 *            the player to check the permission for.
 	 * 
-	 * @return true if they have it, false otherwise.
+	 * @return true if the player can use the command, false otherwise.
 	 */
-	public boolean canBroadcast(Player p)
+	public boolean canUseList(Player p)
 	{
 		if (p == null)
 		{
 			return true;
 		}
 		
-		return p.hasPermission("dispname.announce");
+		return p.hasPermission("dispname.list");
+	}
+	
+	/**
+	 * Checks to see if the given player has the 'dispname.color.italic'
+	 * permission for color code usage.
+	 * 
+	 * @param p
+	 *            the player to check.
+	 * 
+	 * @return true if they have it, false otherwise.
+	 */
+	public boolean canUseItalicColor(Player p)
+	{
+		if (p == null)
+		{
+			return true;
+		}
+		
+		return p.hasPermission("dispname.color.italic");
+	}
+	
+	/**
+	 * Checks to see if the given player has the 'dispname.color.magic'
+	 * permission for color code usage.
+	 * 
+	 * @param p
+	 *            the player to check.
+	 * 
+	 * @return true if they have it, false otherwise.
+	 */
+	public boolean canUseMagicColor(Player p)
+	{
+		if (p == null)
+		{
+			return true;
+		}
+		
+		return p.hasPermission("dispname.color.magic");
+	}
+	
+	/**
+	 * Checks to see if the given player has the 'dispname.color.strike'
+	 * permission for color code usage.
+	 * 
+	 * @param p
+	 *            the player to check.
+	 * 
+	 * @return true if they have it, false otherwise.
+	 */
+	public boolean canUseStrikethroughColor(Player p)
+	{
+		if (p == null)
+		{
+			return true;
+		}
+		
+		return p.hasPermission("dispname.color.strike");
+	}
+	
+	/**
+	 * Checks to see if the given player has the 'dispname.color.underline'
+	 * permission for color code usage.
+	 * 
+	 * @param p
+	 *            the player to check.
+	 * 
+	 * @return true if they have it, false otherwise.
+	 */
+	public boolean canUseUnderlineColor(Player p)
+	{
+		if (p == null)
+		{
+			return true;
+		}
+		
+		return p.hasPermission("dispname.color.underline");
 	}
 	
 	@Override
@@ -199,6 +313,12 @@ public class DispNameCE implements CommandExecutor
 						}
 					}
 					
+					// Ensure we can use protected color codes.
+					if (checkForIllegalColors(changer, saArgs[0]))
+					{
+						return true;
+					}
+					
 					changeDisplayName(changer, saArgs[0]);
 					
 					return true;
@@ -250,6 +370,13 @@ public class DispNameCE implements CommandExecutor
 											return true;
 										}
 									}
+									
+									// Ensure we can use protected color codes.
+									if (checkForIllegalColors(changer, saArgs[0]))
+									{
+										return true;
+									}
+									
 									// Change the targets name.
 									changeDisplayName(changer, players[0],
 											saArgs[0], saArgs[1]);
@@ -282,6 +409,11 @@ public class DispNameCE implements CommandExecutor
 										}
 									}
 									
+									// Ensure we can use protected color codes.
+									if (checkForIllegalColors(changer, saArgs[0]))
+									{
+										return true;
+									}
 									changeDisplayName(changer, saArgs[1]);
 								}
 								else
@@ -324,7 +456,8 @@ public class DispNameCE implements CommandExecutor
 					}
 					else
 					{
-						changer.sendMessage(ChatColor.RED + plugin.dnc_short
+						changer.sendMessage(ChatColor.RED
+								+ plugin.dnc_short
 								+ locale.getString(DNCStrings.PERMISSION_OTHER));
 						
 						return true;
@@ -380,7 +513,8 @@ public class DispNameCE implements CommandExecutor
 						if (changer != null)
 						{
 							changer.sendMessage(ChatColor.RED
-									+ plugin.dnc_short + locale.getString(DNCStrings.ERROR_BAD_USER));
+									+ plugin.dnc_short
+									+ locale.getString(DNCStrings.ERROR_BAD_USER));
 						}
 						else
 						{
@@ -395,7 +529,8 @@ public class DispNameCE implements CommandExecutor
 						if (changer != null)
 						{
 							changer.sendMessage(ChatColor.RED
-									+ plugin.dnc_short + locale.getString(DNCStrings.ERROR_BAD_ARGS));
+									+ plugin.dnc_short
+									+ locale.getString(DNCStrings.ERROR_BAD_ARGS));
 						}
 						else
 						{
@@ -412,7 +547,8 @@ public class DispNameCE implements CommandExecutor
 						if (players == null)
 						{
 							sender.sendMessage(ChatColor.RED
-									+ plugin.dnc_short + locale.getString(DNCStrings.ERROR_BAD_ARGS));
+									+ plugin.dnc_short
+									+ locale.getString(DNCStrings.ERROR_BAD_ARGS));
 							
 							return true;
 						}
@@ -485,7 +621,8 @@ public class DispNameCE implements CommandExecutor
 						
 						Object[] users = new Object[2];
 						
-						formatter.applyPattern(locale.getString(DNCStrings.INFO_CHECK_SINGLE));
+						formatter.applyPattern(locale
+								.getString(DNCStrings.INFO_CHECK_SINGLE));
 						
 						StringBuilder sb = new StringBuilder();
 						
@@ -538,7 +675,8 @@ public class DispNameCE implements CommandExecutor
 						
 						Object[] users = new Object[2];
 						
-						formatter.applyPattern(locale.getString(DNCStrings.INFO_CHECK_MULTI_LIST));
+						formatter.applyPattern(locale
+								.getString(DNCStrings.INFO_CHECK_MULTI_LIST));
 						
 						StringBuilder sb = new StringBuilder();
 						
@@ -598,6 +736,60 @@ public class DispNameCE implements CommandExecutor
 			}
 			
 			return true;
+		}
+		// List Names command
+		else if(cmd.getName().equalsIgnoreCase(DNCCommands.LIST.getName()))
+		{
+			StringBuilder sb;
+			
+			if(canUseList(changer))
+			{
+				formatter.applyPattern(locale
+						.getString(DNCStrings.INFO_CHECK_SINGLE));
+				
+				
+				
+				Object[] oNames = new Object[2];
+				
+				for(Player p: Bukkit.getOnlinePlayers())
+				{
+					sb = new StringBuilder();
+					
+					if(changer != null)
+					{
+						sb.append(ChatColor.GREEN);
+					}
+					
+					sb.append(plugin.dnc_short);
+					
+					oNames[0] = p.getName();
+					
+					oNames[1] = p.getDisplayName();
+					
+					sb.append(formatter.format(oNames));
+					
+					if(changer != null)
+					{
+						changer.sendMessage(sb.toString());
+					}
+					else
+					{
+						sender.sendMessage(sb.toString());
+					}
+				}
+				
+				return true;
+			}
+			else
+			{
+				sb = new StringBuilder();
+				
+				sb.append(ChatColor.RED).append(plugin.dnc_short).append(locale.getString(DNCStrings.PERMISSION_LIST));
+				
+				changer.sendMessage(sb.toString());
+				
+				return true;
+			}
 		}
 		
 		return false;
@@ -698,7 +890,8 @@ public class DispNameCE implements CommandExecutor
 		{
 			sbCaller = new StringBuilder();
 			
-			formatter.applyPattern(locale.getString(DNCStrings.INFO_NICK_CALLER));
+			formatter.applyPattern(locale
+					.getString(DNCStrings.INFO_NICK_CALLER));
 			
 			sbCaller.append(ChatColor.GREEN).append(plugin.dnc_short)
 					.append(formatter.format(users));
@@ -712,7 +905,8 @@ public class DispNameCE implements CommandExecutor
 			
 			if (spoutTarget.isSpoutCraftEnabled())
 			{
-				spoutTarget.sendNotification(locale.getString(DNCStrings.INFO_SPOUT_TARGET),
+				spoutTarget.sendNotification(
+						locale.getString(DNCStrings.INFO_SPOUT_TARGET),
 						spoutName, Material.DIAMOND);
 			}
 			
@@ -722,7 +916,8 @@ public class DispNameCE implements CommandExecutor
 				
 				if (spoutCaller.isSpoutCraftEnabled())
 				{
-					formatter.applyPattern(locale.getString(DNCStrings.INFO_SPOUT_CALLER));
+					formatter.applyPattern(locale
+							.getString(DNCStrings.INFO_SPOUT_CALLER));
 					
 					spoutCaller.sendNotification(formatter.format(users),
 							spoutName, Material.DIAMOND);
@@ -757,7 +952,8 @@ public class DispNameCE implements CommandExecutor
 			{
 				sbCaller = new StringBuilder();
 				
-				formatter.applyPattern(locale.getString(DNCStrings.INFO_NICK_CALLER));
+				formatter.applyPattern(locale
+						.getString(DNCStrings.INFO_NICK_CALLER));
 				
 				sbCaller.append(ChatColor.GREEN).append(plugin.dnc_short)
 						.append(formatter.format(users));
@@ -783,6 +979,83 @@ public class DispNameCE implements CommandExecutor
 		}
 		
 		plugin.storeNick(target);
+	}
+	
+	/**
+	 * Checks for illegal characters in the name (characters being used
+	 * without permission).
+	 * 
+	 * @param target
+	 *            Player who called the name change.
+	 * 
+	 * @param name
+	 *            the name to check.
+	 * 
+	 * @return true if illegal characters detected. False otherwise.
+	 */
+	private boolean checkForIllegalColors(Player target, String name)
+	{
+		String sName = plugin.parseColors(name);
+		
+		if (sName.contains(ChatColor.BOLD.toString()))
+		{
+			if (!canUseBoldColor(target))
+			{
+				target.sendMessage(ChatColor.RED + plugin.dnc_short
+						+ locale.getString(DNCStrings.PERMISSION_COLOR_BOLD));
+				
+				return true;
+			}
+			
+		}
+		
+		if (sName.contains(ChatColor.ITALIC.toString()))
+		{
+			if (!canUseItalicColor(target))
+			{
+				target.sendMessage(ChatColor.RED + plugin.dnc_short
+						+ locale.getString(DNCStrings.PERMISSION_COLOR_ITALIC));
+				
+				return true;
+			}
+		}
+		
+		if (sName.contains(ChatColor.MAGIC.toString()))
+		{
+			if (!canUseMagicColor(target))
+			{
+				target.sendMessage(ChatColor.RED + plugin.dnc_short
+						+ locale.getString(DNCStrings.PERMISSION_COLOR_MAGIC));
+				
+				return true;
+			}
+		}
+		
+		if (sName.contains(ChatColor.STRIKETHROUGH.toString()))
+		{
+			if (!canUseStrikethroughColor(target))
+			{
+				target.sendMessage(ChatColor.RED
+						+ plugin.dnc_short
+						+ locale.getString(DNCStrings.PERMISSION_COLOR_STRIKETHROUGH));
+				
+				return true;
+			}
+		}
+		
+		if (sName.contains(ChatColor.UNDERLINE.toString()))
+		{
+			if (!canUseUnderlineColor(target))
+			{
+				target.sendMessage(ChatColor.RED
+						+ plugin.dnc_short
+						+ locale.getString(DNCStrings.PERMISSION_COLOR_UNDERLINE));
+				
+				return true;
+			}
+		}
+		
+		return false;
 	}
 	
 	/**

@@ -19,7 +19,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.getspout.spoutapi.SpoutManager;
 import org.getspout.spoutapi.player.SpoutPlayer;
 
 /**
@@ -45,11 +44,11 @@ public class DispNameChanger extends JavaPlugin
 	
 	private final DPL playerlistener;
 	
+	private final DPLSpout spoutListener;
+	
 	private ChatColor ccPrefix;
 	
 	private Locale locale;
-	
-	private SpoutManager spout;
 	
 	private Plugin pSpout;
 	
@@ -102,6 +101,8 @@ public class DispNameChanger extends JavaPlugin
 		executor = new DispNameCE();
 		
 		playerlistener = new DPL();
+		
+		spoutListener = new DPLSpout();
 		
 		bBroadcastAll = true;
 		
@@ -263,6 +264,23 @@ public class DispNameChanger extends JavaPlugin
 		return bBroadcastAll;
 	}
 	
+	public boolean isLastColorReset(String input)
+	{
+		if(!input.contains(ChatColor.RESET.toString()))
+		{
+			return false;
+		}
+		
+		ChatColor ccColor = lastColorUsed(input);
+		
+		if(ccColor != null && ccColor == ChatColor.RESET)
+		{
+			return true;
+		}
+		
+		return false;
+	}
+
 	@SuppressWarnings(
 	{ "unchecked", "rawtypes" })
 	@Override
@@ -316,16 +334,6 @@ public class DispNameChanger extends JavaPlugin
 	}
 	
 	/**
-	 * Gets the current SpoutManager.
-	 * 
-	 * @return a SpoutManager.
-	 */
-	public SpoutManager getSpoutManager()
-	{
-		return spout;
-	}
-	
-	/**
 	 * Returns whether or not spout is on the server.
 	 * 
 	 * @return true if spout is loaded, false otherwise.
@@ -355,18 +363,21 @@ public class DispNameChanger extends JavaPlugin
 	 */
 	public ChatColor lastColorUsed(String input)
 	{
+		if(!checkForColors(input))
+		{
+			return null;
+		}
+		
 		String[] saNick = input.split(String.valueOf(ChatColor.COLOR_CHAR));
 		
 		if (saNick.length > 1)
 		{
 			return ChatColor.getByChar(saNick[saNick.length - 1]);
 		}
-		else if (checkForColors(input))
+		else
 		{
-			return ChatColor.getByChar(saNick[0]);
+			return ChatColor.getByChar(saNick[1]);
 		}
-		
-		return null;
 	}
 	
 	@Override
@@ -406,6 +417,8 @@ public class DispNameChanger extends JavaPlugin
 		else
 		{
 			this.bUseSpout = true;
+			
+			pm.registerEvents(spoutListener, this);
 			
 			log.info(dnc_long + localization.getString(DNCStrings.INFO_SPOUT));
 		}
@@ -643,7 +656,7 @@ public class DispNameChanger extends JavaPlugin
 	{
 		StringBuilder sb = new StringBuilder();
 		
-		sb.append(name.replaceAll("(&([0-9a-fkA-Fk]))", "§$2"));
+		sb.append(name.replaceAll("(&([0-9a-fklmnorA-FKLMNOR]))", "§$2"));
 		
 		String sName = sb.toString();
 		
@@ -652,14 +665,12 @@ public class DispNameChanger extends JavaPlugin
 			return sb.toString();
 		}
 		
-		ChatColor ccColor = lastColorUsed(sName);
-		
-		if (ccColor != null && ccColor == ChatColor.WHITE)
+		if(isLastColorReset(sName))
 		{
 			return sb.toString();
 		}
 		
-		sb.append(ChatColor.WHITE);
+		sb.append(ChatColor.RESET);
 		
 		return sb.toString();
 	}
@@ -805,6 +816,31 @@ public class DispNameChanger extends JavaPlugin
 	}
 	
 	/**
+	 * Checks for the ChatColor codes for Bold, Italic, Strikethrough, or
+	 * Underline. Note, this does not include the reset code.
+	 * 
+	 * @param input
+	 *            string to check for color codes.
+	 * 
+	 * @return true if one of the special color codes is found, false
+	 *         otherwise.
+	 */
+	public boolean specialChatColor(String input)
+	{
+		if (input.contains(ChatColor.BOLD.toString())
+				|| input.contains(ChatColor.ITALIC.toString())
+				|| input.contains(ChatColor.STRIKETHROUGH.toString())
+				|| input.contains(ChatColor.UNDERLINE.toString()))
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	
+	/**
 	 * Checks to see if a string starts with a color.
 	 * 
 	 * @param input
@@ -818,7 +854,10 @@ public class DispNameChanger extends JavaPlugin
 		{
 			if (input.startsWith(c.toString()))
 			{
-				return true;
+				if(c.isColor())
+				{
+					return true;
+				}
 			}
 		}
 		
@@ -846,6 +885,7 @@ public class DispNameChanger extends JavaPlugin
 		
 		if (sName.equals(sDName))
 		{
+			
 			if (pClass != null)
 			{
 				getDatabase().delete(pClass);
@@ -1094,7 +1134,7 @@ public class DispNameChanger extends JavaPlugin
 		if (usePrefixColor())
 		{
 			sPrefixFull = ccPrefix + Character.toString(cPrefix)
-					+ ChatColor.WHITE;
+					+ ChatColor.RESET;
 			
 			sPrefixShort = ccPrefix + Character.toString(cPrefix);
 		}
