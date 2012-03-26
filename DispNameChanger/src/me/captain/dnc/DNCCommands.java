@@ -21,7 +21,12 @@ public enum DNCCommands
 	/**
 	 * The command used to trigger a reset action.
 	 */
-	RESET("reset");
+	RESET("reset"),
+	
+	/**
+	 * The command used to trigger a list action.
+	 */
+	LIST("list");
 	
 	private String sCommand;
 	

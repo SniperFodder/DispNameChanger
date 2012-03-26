@@ -3,7 +3,6 @@ package me.captain.dnc;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.List;
-import java.util.TimerTask;
 import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
@@ -17,8 +16,6 @@ import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.getspout.spoutapi.SpoutManager;
-import org.getspout.spoutapi.event.spout.SpoutCraftEnableEvent;
 import org.getspout.spoutapi.player.SpoutPlayer;
 
 /**
@@ -73,7 +70,7 @@ public class DPL implements Listener
 			Object[] user =
 			{ player.getDisplayName() };
 			
-			formatter.applyPattern(locale.info_player_death);
+			formatter.applyPattern(locale.getString(DNCStrings.INFO_PLAYER_DEATH));
 			
 			event.setDeathMessage(formatter.format(user));
 		}
@@ -98,7 +95,7 @@ public class DPL implements Listener
 			Object[] user =
 			{ event.getPlayer().getDisplayName(), ChatColor.YELLOW };
 			
-			formatter.applyPattern(locale.info_player_join);
+			formatter.applyPattern(locale.getString(DNCStrings.INFO_PLAYER_JOIN));
 			
 			event.setJoinMessage(ChatColor.YELLOW + formatter.format(user));
 		}
@@ -143,7 +140,7 @@ public class DPL implements Listener
 			Object[] user =
 			{ player.getDisplayName(), ChatColor.YELLOW };
 			
-			formatter.applyPattern(locale.info_player_kick);
+			formatter.applyPattern(locale.getString(DNCStrings.INFO_PLAYER_KICK));
 			
 			event.setLeaveMessage(ChatColor.YELLOW + formatter.format(user));
 		}
@@ -180,28 +177,11 @@ public class DPL implements Listener
 			Object[] user =
 			{ player.getDisplayName(), ChatColor.YELLOW };
 			
-			formatter.applyPattern(locale.info_player_quit);
+			formatter.applyPattern(locale.getString(DNCStrings.INFO_PLAYER_QUIT));
 			
 			event.setQuitMessage(ChatColor.YELLOW + formatter.format(user));
 			
 		}
-	}
-	
-	/**
-	 * Handles setting the title for each player after they join the
-	 * server.
-	 * 
-	 * @param event
-	 *            the event triggered when a player with SpoutCraft joins
-	 *            the server.
-	 */
-	@EventHandler(priority = EventPriority.HIGHEST)
-	public void onSpoutCraftEnable(SpoutCraftEnableEvent event)
-	{
-		// TODO Fix this when Spout fixes their damn code.
-		
-		plugin.getServer().getScheduler()
-				.scheduleSyncDelayedTask(plugin, new RenameTask(), 150L);
 	}
 	
 	/**
@@ -270,7 +250,7 @@ public class DPL implements Listener
 				event.setCancelled(true);
 				
 				player.sendMessage(ChatColor.RED + plugin.dnc_short
-						+ locale.error_multi_match);
+						+ locale.getString(DNCStrings.ERROR_MULTI_MATCH));
 			}
 			break;
 		// Possible Command + Multipart DispName
@@ -318,7 +298,7 @@ public class DPL implements Listener
 					event.setCancelled(true);
 					
 					player.sendMessage(ChatColor.RED + plugin.dnc_short
-							+ locale.error_multi_match);
+							+ locale.getString(DNCStrings.ERROR_MULTI_MATCH));
 					
 					sbCommand = null;
 					
@@ -393,29 +373,5 @@ public class DPL implements Listener
 		}
 		
 		return false;
-	}
-	
-	/**
-	 * Handles setting the title for everyone when a new player joins.
-	 * 
-	 * @author Mark 'SniperFodder' Gunnett
-	 * 
-	 */
-	private class RenameTask extends TimerTask
-	{
-		@Override
-		public void run()
-		{
-			SpoutPlayer[] onlinePlayers = SpoutManager.getOnlinePlayers();
-			
-			for (SpoutPlayer p : onlinePlayers)
-			{
-				if (!p.getName().equals(p.getDisplayName()))
-				{
-					p.setTitle(p.getDisplayName());
-				}
-			}
-			
-		}
 	}
 }
