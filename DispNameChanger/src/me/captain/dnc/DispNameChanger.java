@@ -372,7 +372,8 @@ public class DispNameChanger extends JavaPlugin
 	@Override
 	public void onDisable()
 	{
-		log.info(dnc_long + localization.info_dnc_disabled);
+		log.info(dnc_long
+				+ localization.getString(DNCStrings.INFO_DNC_DISABLED));
 	}
 	
 	@Override
@@ -399,16 +400,18 @@ public class DispNameChanger extends JavaPlugin
 		{
 			this.bUseSpout = false;
 			
-			log.info(dnc_long + localization.info_no_spout);
+			log.info(dnc_long
+					+ localization.getString(DNCStrings.INFO_NO_SPOUT));
 		}
 		else
 		{
 			this.bUseSpout = true;
 			
-			log.info(dnc_long + localization.info_spout);
+			log.info(dnc_long + localization.getString(DNCStrings.INFO_SPOUT));
 		}
 		
-		log.info(dnc_long + localization.info_dnc_enabled);
+		log.info(dnc_long
+				+ localization.getString(DNCStrings.INFO_DNC_ENABLED));
 	}
 	
 	/**
@@ -768,8 +771,10 @@ public class DispNameChanger extends JavaPlugin
 					
 					pClass.setDisplayName(sDName);
 					
-					player.sendMessage(ChatColor.RED + dnc_short
-							+ localization.info_nick_conflict);
+					player.sendMessage(ChatColor.RED
+							+ dnc_short
+							+ localization
+									.getString(DNCStrings.INFO_NICK_CONFLICT));
 					
 					break;
 				}
@@ -995,21 +1000,28 @@ public class DispNameChanger extends JavaPlugin
 		
 		formatter.setLocale(locale);
 		
-		formatter.applyPattern(localization.info_spout);
+		formatter.applyPattern(localization.getString(DNCStrings.INFO_SPOUT));
 		
-		localization.info_spout = formatter.format(spoutArgs);
+		localization.setString(DNCStrings.INFO_SPOUT,
+				formatter.format(spoutArgs));
 		
-		formatter.applyPattern(localization.info_dnc_enabled);
+		formatter.applyPattern(localization
+				.getString(DNCStrings.INFO_DNC_ENABLED));
 		
-		localization.info_dnc_enabled = formatter.format(dncArgs);
+		localization.setString(DNCStrings.INFO_DNC_ENABLED,
+				formatter.format(dncArgs));
 		
-		formatter.applyPattern(localization.info_dnc_disabled);
+		formatter.applyPattern(localization
+				.getString(DNCStrings.INFO_DNC_DISABLED));
 		
-		localization.info_dnc_disabled = formatter.format(dncArgs);
+		localization.setString(DNCStrings.INFO_DNC_DISABLED,
+				formatter.format(dncArgs));
 		
-		formatter.applyPattern(localization.info_db_make);
+		formatter
+				.applyPattern(localization.getString(DNCStrings.INFO_DB_MAKE));
 		
-		localization.info_db_make = formatter.format(dncArgs);
+		localization.setString(DNCStrings.INFO_DB_MAKE,
+				formatter.format(dncArgs));
 	}
 	
 	/**
@@ -1139,7 +1151,8 @@ public class DispNameChanger extends JavaPlugin
 		}
 		catch (PersistenceException ex)
 		{
-			log.info(dnc_long + localization.info_db_make);
+			log.info(dnc_long
+					+ localization.getString(DNCStrings.INFO_DB_MAKE));
 			
 			installDDL();
 		}

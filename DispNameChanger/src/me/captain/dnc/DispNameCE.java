@@ -167,7 +167,7 @@ public class DispNameCE implements CommandExecutor
 					if (changer == null)
 					{
 						sender.sendMessage(plugin.dnc_short
-								+ locale.error_console);
+								+ locale.getString(DNCStrings.ERROR_CONSOLE_RENAME));
 						
 						return false;
 					}
@@ -193,7 +193,7 @@ public class DispNameCE implements CommandExecutor
 						{
 							changer.sendMessage(ChatColor.RED
 									+ plugin.dnc_short
-									+ locale.error_non_unique);
+									+ locale.getString(DNCStrings.ERROR_NON_UNIQUE));
 							
 							return true;
 						}
@@ -220,12 +220,12 @@ public class DispNameCE implements CommandExecutor
 							{
 								changer.sendMessage(ChatColor.RED
 										+ plugin.dnc_short
-										+ locale.error_bad_user);
+										+ locale.getString(DNCStrings.ERROR_BAD_USER));
 							}
 							else
 							{
 								sender.sendMessage(plugin.dnc_short
-										+ locale.error_bad_user);
+										+ locale.getString(DNCStrings.ERROR_BAD_USER));
 							}
 							
 							return true;
@@ -245,7 +245,7 @@ public class DispNameCE implements CommandExecutor
 										{
 											changer.sendMessage(ChatColor.RED
 													+ plugin.dnc_short
-													+ locale.error_non_unique);
+													+ locale.getString(DNCStrings.ERROR_NON_UNIQUE));
 											
 											return true;
 										}
@@ -260,7 +260,7 @@ public class DispNameCE implements CommandExecutor
 								{
 									changer.sendMessage(ChatColor.RED
 											+ plugin.dnc_short
-											+ locale.permission_spaces);
+											+ locale.getString(DNCStrings.PERMISSION_SPACES));
 									
 									return true;
 								}
@@ -276,7 +276,7 @@ public class DispNameCE implements CommandExecutor
 										{
 											changer.sendMessage(ChatColor.RED
 													+ plugin.dnc_short
-													+ locale.error_non_unique);
+													+ locale.getString(DNCStrings.ERROR_NON_UNIQUE));
 											
 											return true;
 										}
@@ -292,7 +292,7 @@ public class DispNameCE implements CommandExecutor
 										{
 											changer.sendMessage(ChatColor.RED
 													+ plugin.dnc_short
-													+ locale.error_non_unique);
+													+ locale.getString(DNCStrings.ERROR_NON_UNIQUE));
 											
 											return true;
 										}
@@ -312,12 +312,12 @@ public class DispNameCE implements CommandExecutor
 							{
 								changer.sendMessage(ChatColor.RED
 										+ plugin.dnc_short
-										+ locale.error_multi_match);
+										+ locale.getString(DNCStrings.ERROR_MULTI_MATCH));
 							}
 							else
 							{
 								sender.sendMessage(plugin.dnc_short
-										+ locale.error_multi_match);
+										+ locale.getString(DNCStrings.ERROR_MULTI_MATCH));
 							}
 							return true;
 						}
@@ -325,7 +325,7 @@ public class DispNameCE implements CommandExecutor
 					else
 					{
 						changer.sendMessage(ChatColor.RED + plugin.dnc_short
-								+ locale.permission_other);
+								+ locale.getString(DNCStrings.PERMISSION_OTHER));
 						
 						return true;
 					}
@@ -334,7 +334,7 @@ public class DispNameCE implements CommandExecutor
 			else
 			{
 				changer.sendMessage(ChatColor.RED + plugin.dnc_short
-						+ locale.permission_use);
+						+ locale.getString(DNCStrings.PERMISSION_USE));
 				
 				return true;
 			}
@@ -347,7 +347,7 @@ public class DispNameCE implements CommandExecutor
 				if (changer == null)
 				{
 					sender.sendMessage(plugin.dnc_short
-							+ locale.error_console_rename);
+							+ locale.getString(DNCStrings.ERROR_CONSOLE_RENAME));
 					
 					return false;
 				}
@@ -362,7 +362,7 @@ public class DispNameCE implements CommandExecutor
 					else
 					{
 						changer.sendMessage(ChatColor.RED + plugin.dnc_short
-								+ locale.permission_use);
+								+ locale.getString(DNCStrings.PERMISSION_USE));
 						
 						return true;
 					}
@@ -380,12 +380,12 @@ public class DispNameCE implements CommandExecutor
 						if (changer != null)
 						{
 							changer.sendMessage(ChatColor.RED
-									+ plugin.dnc_short + locale.error_bad_user);
+									+ plugin.dnc_short + locale.getString(DNCStrings.ERROR_BAD_USER));
 						}
 						else
 						{
 							sender.sendMessage(plugin.dnc_short
-									+ locale.error_bad_user);
+									+ locale.getString(DNCStrings.ERROR_BAD_USER));
 						}
 						
 						return false;
@@ -395,12 +395,12 @@ public class DispNameCE implements CommandExecutor
 						if (changer != null)
 						{
 							changer.sendMessage(ChatColor.RED
-									+ plugin.dnc_short + locale.error_bad_args);
+									+ plugin.dnc_short + locale.getString(DNCStrings.ERROR_BAD_ARGS));
 						}
 						else
 						{
 							sender.sendMessage(plugin.dnc_short
-									+ locale.error_bad_args);
+									+ locale.getString(DNCStrings.ERROR_BAD_ARGS));
 						}
 						
 						return false;
@@ -412,7 +412,7 @@ public class DispNameCE implements CommandExecutor
 						if (players == null)
 						{
 							sender.sendMessage(ChatColor.RED
-									+ plugin.dnc_short + locale.error_bad_user);
+									+ plugin.dnc_short + locale.getString(DNCStrings.ERROR_BAD_ARGS));
 							
 							return true;
 						}
@@ -423,12 +423,12 @@ public class DispNameCE implements CommandExecutor
 							{
 								changer.sendMessage(ChatColor.RED
 										+ plugin.dnc_short
-										+ locale.error_multi_match);
+										+ locale.getString(DNCStrings.ERROR_MULTI_MATCH));
 							}
 							else
 							{
 								sender.sendMessage(plugin.dnc_short
-										+ locale.error_multi_match);
+										+ locale.getString(DNCStrings.ERROR_MULTI_MATCH));
 							}
 							
 							return true;
@@ -445,7 +445,7 @@ public class DispNameCE implements CommandExecutor
 				else
 				{
 					changer.sendMessage(ChatColor.RED + plugin.dnc_short
-							+ locale.permission_other);
+							+ locale.getString(DNCStrings.PERMISSION_OTHER));
 					
 					return true;
 				}
@@ -469,7 +469,7 @@ public class DispNameCE implements CommandExecutor
 					if (players == null)
 					{
 						sender.sendMessage(ChatColor.RED + plugin.dnc_short
-								+ locale.error_bad_user);
+								+ locale.getString(DNCStrings.ERROR_BAD_USER));
 						
 						return true;
 					}
@@ -485,7 +485,7 @@ public class DispNameCE implements CommandExecutor
 						
 						Object[] users = new Object[2];
 						
-						formatter.applyPattern(locale.info_check_single);
+						formatter.applyPattern(locale.getString(DNCStrings.INFO_CHECK_SINGLE));
 						
 						StringBuilder sb = new StringBuilder();
 						
@@ -528,17 +528,17 @@ public class DispNameCE implements CommandExecutor
 						{
 							changer.sendMessage(ChatColor.GREEN
 									+ plugin.dnc_short
-									+ locale.info_check_multi);
+									+ locale.getString(DNCStrings.INFO_CHECK_MULTI));
 						}
 						else
 						{
 							sender.sendMessage(plugin.dnc_short
-									+ locale.info_check_multi);
+									+ locale.getString(DNCStrings.INFO_CHECK_MULTI));
 						}
 						
 						Object[] users = new Object[2];
 						
-						formatter.applyPattern(locale.info_check_multi_list);
+						formatter.applyPattern(locale.getString(DNCStrings.INFO_CHECK_MULTI_LIST));
 						
 						StringBuilder sb = new StringBuilder();
 						
@@ -579,12 +579,12 @@ public class DispNameCE implements CommandExecutor
 					if (changer != null)
 					{
 						changer.sendMessage(ChatColor.RED + plugin.dnc_short
-								+ locale.error_bad_args);
+								+ locale.getString(DNCStrings.ERROR_BAD_ARGS));
 					}
 					else
 					{
 						sender.sendMessage(plugin.dnc_short
-								+ locale.error_bad_args);
+								+ locale.getString(DNCStrings.ERROR_BAD_ARGS));
 					}
 					
 					return false;
@@ -594,7 +594,7 @@ public class DispNameCE implements CommandExecutor
 			else
 			{
 				changer.sendMessage(ChatColor.RED + plugin.dnc_short
-						+ locale.permission_check);
+						+ locale.getString(DNCStrings.PERMISSION_CHECK));
 			}
 			
 			return true;
@@ -683,7 +683,7 @@ public class DispNameCE implements CommandExecutor
 			target.setPlayerListName(sListName);
 		}
 		
-		formatter.applyPattern(locale.info_nick_target);
+		formatter.applyPattern(locale.getString(DNCStrings.INFO_NICK_TARGET));
 		
 		StringBuilder sbTarget = new StringBuilder();
 		
@@ -698,7 +698,7 @@ public class DispNameCE implements CommandExecutor
 		{
 			sbCaller = new StringBuilder();
 			
-			formatter.applyPattern(locale.info_nick_caller);
+			formatter.applyPattern(locale.getString(DNCStrings.INFO_NICK_CALLER));
 			
 			sbCaller.append(ChatColor.GREEN).append(plugin.dnc_short)
 					.append(formatter.format(users));
@@ -712,7 +712,7 @@ public class DispNameCE implements CommandExecutor
 			
 			if (spoutTarget.isSpoutCraftEnabled())
 			{
-				spoutTarget.sendNotification(locale.info_spout_target,
+				spoutTarget.sendNotification(locale.getString(DNCStrings.INFO_SPOUT_TARGET),
 						spoutName, Material.DIAMOND);
 			}
 			
@@ -722,7 +722,7 @@ public class DispNameCE implements CommandExecutor
 				
 				if (spoutCaller.isSpoutCraftEnabled())
 				{
-					formatter.applyPattern(locale.info_spout_caller);
+					formatter.applyPattern(locale.getString(DNCStrings.INFO_SPOUT_CALLER));
 					
 					spoutCaller.sendNotification(formatter.format(users),
 							spoutName, Material.DIAMOND);
@@ -757,7 +757,7 @@ public class DispNameCE implements CommandExecutor
 			{
 				sbCaller = new StringBuilder();
 				
-				formatter.applyPattern(locale.info_nick_caller);
+				formatter.applyPattern(locale.getString(DNCStrings.INFO_NICK_CALLER));
 				
 				sbCaller.append(ChatColor.GREEN).append(plugin.dnc_short)
 						.append(formatter.format(users));
