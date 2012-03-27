@@ -2,6 +2,8 @@ package me.captain.dnc;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -68,7 +70,7 @@ public class DispNameCE implements CommandExecutor
 		
 		return p.hasPermission("dispname.announce");
 	}
-
+	
 	/**
 	 * Checks to see if the given player has the 'dispname.color.bold'
 	 * permission for color code usage.
@@ -87,7 +89,7 @@ public class DispNameCE implements CommandExecutor
 		
 		return p.hasPermission("dispname.color.bold");
 	}
-
+	
 	/**
 	 * Checks to see if the Player can use the command.
 	 * 
@@ -371,8 +373,10 @@ public class DispNameCE implements CommandExecutor
 										}
 									}
 									
-									// Ensure we can use protected color codes.
-									if (checkForIllegalColors(changer, saArgs[0]))
+									// Ensure we can use protected color
+									// codes.
+									if (checkForIllegalColors(changer,
+											saArgs[0]))
 									{
 										return true;
 									}
@@ -409,8 +413,10 @@ public class DispNameCE implements CommandExecutor
 										}
 									}
 									
-									// Ensure we can use protected color codes.
-									if (checkForIllegalColors(changer, saArgs[0]))
+									// Ensure we can use protected color
+									// codes.
+									if (checkForIllegalColors(changer,
+											saArgs[0]))
 									{
 										return true;
 									}
@@ -738,22 +744,22 @@ public class DispNameCE implements CommandExecutor
 			return true;
 		}
 		// List Names command
-		else if(cmd.getName().equalsIgnoreCase(DNCCommands.LIST.getName()))
+		else if (cmd.getName().equalsIgnoreCase(DNCCommands.LIST.getName()))
 		{
 			StringBuilder sb;
 			
-			if(canUseList(changer))
+			if (canUseList(changer))
 			{
 				formatter.applyPattern(locale
 						.getString(DNCStrings.INFO_CHECK_SINGLE));
 				
 				Object[] oNames = new Object[2];
 				
-				for(Player p: Bukkit.getOnlinePlayers())
+				for (Player p : Bukkit.getOnlinePlayers())
 				{
 					sb = new StringBuilder();
 					
-					if(changer != null)
+					if (changer != null)
 					{
 						sb.append(ChatColor.GREEN);
 					}
@@ -764,14 +770,14 @@ public class DispNameCE implements CommandExecutor
 					
 					oNames[1] = p.getDisplayName();
 					
-					if(oNames[0].equals(oNames[1]))
+					if (oNames[0].equals(oNames[1]))
 					{
 						continue;
 					}
 					
 					sb.append(formatter.format(oNames));
 					
-					if(changer != null)
+					if (changer != null)
 					{
 						changer.sendMessage(sb.toString());
 					}
@@ -787,7 +793,8 @@ public class DispNameCE implements CommandExecutor
 			{
 				sb = new StringBuilder();
 				
-				sb.append(ChatColor.RED).append(plugin.dnc_short).append(locale.getString(DNCStrings.PERMISSION_LIST));
+				sb.append(ChatColor.RED).append(plugin.dnc_short)
+						.append(locale.getString(DNCStrings.PERMISSION_LIST));
 				
 				changer.sendMessage(sb.toString());
 				
@@ -932,6 +939,8 @@ public class DispNameCE implements CommandExecutor
 		
 		if (plugin.useGlobalAnnounce())
 		{
+			Logger log = Bukkit.getLogger();
+			
 			Player[] exclude;
 			
 			if (caller != null)
@@ -949,9 +958,15 @@ public class DispNameCE implements CommandExecutor
 				exclude[0] = target;
 			}
 			
+			log.warning(plugin.dnc_short + "CDN;UseAnnounce - Exclude: "
+					+ Arrays.toString(exclude));
+			
 			Player[] targets = getAnnounceTargets(exclude);
 			
-			if (targets != null)
+			log.warning(plugin.dnc_short + "CDN;UseAnnounce - Targets: "
+					+ Arrays.toString(targets));
+			
+			if (targets.length > 0)
 			{
 				sbCaller = new StringBuilder();
 				
@@ -961,19 +976,22 @@ public class DispNameCE implements CommandExecutor
 				sbCaller.append(ChatColor.GREEN).append(plugin.dnc_short)
 						.append(formatter.format(users));
 				
-				if (plugin.isBroadcastAll())
+				for (Player p : targets)
 				{
-					for (Player p : targets)
+					if (plugin.isBroadcastAll())
 					{
+						log.warning(plugin.dnc_short
+								+ "CDN;UseAnnounce - Messaging: "
+								+ p.getName());
 						p.sendMessage(sbCaller.toString());
 					}
-				}
-				else
-				{
-					for (Player p : targets)
+					else
 					{
 						if (canBroadcast(p))
 						{
+							log.warning(plugin.dnc_short
+									+ "CDN;UseAnnounce - Messaging - Permission: "
+									+ p.getName());
 							p.sendMessage(sbCaller.toString());
 						}
 					}
@@ -1073,6 +1091,8 @@ public class DispNameCE implements CommandExecutor
 	 */
 	private Player[] getAnnounceTargets(Player[] exclude)
 	{
+		Logger log = Bukkit.getLogger();
+		
 		if (exclude == null || exclude.length == 0)
 		{
 			throw new IllegalArgumentException(
@@ -1083,14 +1103,35 @@ public class DispNameCE implements CommandExecutor
 		
 		Player[] onlinePlayers = plugin.getServer().getOnlinePlayers();
 		
+		boolean bFound = false;
+		
 		for (Player online : onlinePlayers)
 		{
-			for (Player p : exclude)
+			log.warning(plugin.dnc_short + "GetAnnounce - Checking Player "
+					+ online.getName());
+			
+			for (Player excluded : exclude)
 			{
-				if (!p.equals(online))
+				if (excluded.getName().equals(online.getName()))
 				{
-					targets.add(online);
+					log.warning(plugin.dnc_short
+							+ "GetAnnounce - Name Match for Exclude: "
+							+ online.getName());
+					
+					bFound = true;
+					
+					break;
 				}
+			}
+			
+			if (!bFound)
+			{
+				log.warning(plugin.dnc_short + "GetAnnounce - No Match for "
+						+ online.getName());
+				
+				targets.add(online);
+				
+				bFound = false;
 			}
 		}
 		
@@ -1104,8 +1145,10 @@ public class DispNameCE implements CommandExecutor
 			
 			return result;
 		}
-		
-		return null;
+		else
+		{
+			return new Player[0];
+		}
 	}
 	
 	/**
