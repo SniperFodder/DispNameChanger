@@ -1,6 +1,6 @@
 ##  Plugin Information  ##
 name: DispNameChanger
-version: 5.5
+version: 5.5.1
 description: Lets you change the display name of yourself or others.
 ##  Original Author     ##
 author: captainawesome7
@@ -34,8 +34,8 @@ commands:
         usage: |
             /checkname <name>
             Aliases: checkname, namecheck
-    list:
-        aliases: listnames
+    displaylist:
+        aliases: [listnames, displist, dnclist]
         description: Shows a list of all the users and their display names.
         permission: dispname.list
         usage: |
