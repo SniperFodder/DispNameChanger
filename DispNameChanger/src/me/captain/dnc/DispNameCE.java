@@ -2,8 +2,6 @@ package me.captain.dnc;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -939,8 +937,6 @@ public class DispNameCE implements CommandExecutor
 		
 		if (plugin.useGlobalAnnounce())
 		{
-			Logger log = Bukkit.getLogger();
-			
 			Player[] exclude;
 			
 			if (caller != null)
@@ -958,13 +954,7 @@ public class DispNameCE implements CommandExecutor
 				exclude[0] = target;
 			}
 			
-			log.warning(plugin.dnc_short + "CDN;UseAnnounce - Exclude: "
-					+ Arrays.toString(exclude));
-			
 			Player[] targets = getAnnounceTargets(exclude);
-			
-			log.warning(plugin.dnc_short + "CDN;UseAnnounce - Targets: "
-					+ Arrays.toString(targets));
 			
 			if (targets.length > 0)
 			{
@@ -980,18 +970,12 @@ public class DispNameCE implements CommandExecutor
 				{
 					if (plugin.isBroadcastAll())
 					{
-						log.warning(plugin.dnc_short
-								+ "CDN;UseAnnounce - Messaging: "
-								+ p.getName());
 						p.sendMessage(sbCaller.toString());
 					}
 					else
 					{
 						if (canBroadcast(p))
 						{
-							log.warning(plugin.dnc_short
-									+ "CDN;UseAnnounce - Messaging - Permission: "
-									+ p.getName());
 							p.sendMessage(sbCaller.toString());
 						}
 					}
@@ -1091,8 +1075,6 @@ public class DispNameCE implements CommandExecutor
 	 */
 	private Player[] getAnnounceTargets(Player[] exclude)
 	{
-		Logger log = Bukkit.getLogger();
-		
 		if (exclude == null || exclude.length == 0)
 		{
 			throw new IllegalArgumentException(
@@ -1107,17 +1089,11 @@ public class DispNameCE implements CommandExecutor
 		
 		for (Player online : onlinePlayers)
 		{
-			log.warning(plugin.dnc_short + "GetAnnounce - Checking Player "
-					+ online.getName());
 			
 			for (Player excluded : exclude)
 			{
 				if (excluded.getName().equals(online.getName()))
 				{
-					log.warning(plugin.dnc_short
-							+ "GetAnnounce - Name Match for Exclude: "
-							+ online.getName());
-					
 					bFound = true;
 					
 					break;
@@ -1126,9 +1102,6 @@ public class DispNameCE implements CommandExecutor
 			
 			if (!bFound)
 			{
-				log.warning(plugin.dnc_short + "GetAnnounce - No Match for "
-						+ online.getName());
-				
 				targets.add(online);
 				
 				bFound = false;
