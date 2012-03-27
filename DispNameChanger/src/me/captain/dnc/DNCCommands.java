@@ -26,7 +26,7 @@ public enum DNCCommands
 	/**
 	 * The command used to trigger a list action.
 	 */
-	LIST("list");
+	LIST("displaylist");
 	
 	private String sCommand;
 	

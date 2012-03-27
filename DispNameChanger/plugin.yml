@@ -34,8 +34,8 @@ commands:
         usage: |
             /checkname <name>
             Aliases: checkname, namecheck
-    list:
-        aliases: listnames
+    displaylist:
+        aliases: [listnames, displist, dnclist]
         description: Shows a list of all the users and their display names.
         permission: dispname.list
         usage: |

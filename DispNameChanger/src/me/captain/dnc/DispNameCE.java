@@ -747,8 +747,6 @@ public class DispNameCE implements CommandExecutor
 				formatter.applyPattern(locale
 						.getString(DNCStrings.INFO_CHECK_SINGLE));
 				
-				
-				
 				Object[] oNames = new Object[2];
 				
 				for(Player p: Bukkit.getOnlinePlayers())
@@ -765,6 +763,11 @@ public class DispNameCE implements CommandExecutor
 					oNames[0] = p.getName();
 					
 					oNames[1] = p.getDisplayName();
+					
+					if(oNames[0].equals(oNames[1]))
+					{
+						continue;
+					}
 					
 					sb.append(formatter.format(oNames));
 					
