@@ -130,7 +130,7 @@ public class DPL implements Listener
 		
 		if (iEntityID == iStoredID)
 		{
-			plugin.storeNick(player);
+			// plugin.storeNick(player);
 			
 			entityID.put(player.getName(), -1);
 		}
@@ -163,7 +163,7 @@ public class DPL implements Listener
 		
 		if (iEntityID == iStoredID)
 		{
-			plugin.storeNick(player);
+			// plugin.storeNick(player);
 			
 			entityID.remove(player.getName());
 		}
@@ -191,7 +191,7 @@ public class DPL implements Listener
 	 * @param event
 	 *            The event that was triggered by sending a command.
 	 */
-	@EventHandler(priority = EventPriority.HIGHEST)
+	@EventHandler(priority = EventPriority.LOWEST)
 	public void onCommandPreprocess(PlayerCommandPreprocessEvent event)
 	{
 		/*
