@@ -4,8 +4,10 @@ import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -14,6 +16,7 @@ import javax.persistence.PersistenceException;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
@@ -47,6 +50,8 @@ public class DispNameChanger extends JavaPlugin
 	private final DPLSpout spoutListener;
 	
 	private ChatColor ccPrefix;
+	
+	private HashMap<String, Integer> hCommands;
 	
 	private Locale locale;
 	
@@ -103,6 +108,8 @@ public class DispNameChanger extends JavaPlugin
 		playerlistener = new DPL();
 		
 		spoutListener = new DPLSpout();
+		
+		hCommands = new HashMap<String, Integer>();
 		
 		bBroadcastAll = true;
 		
@@ -333,6 +340,11 @@ public class DispNameChanger extends JavaPlugin
 		return ccPrefix;
 	}
 	
+	public HashMap<String, Integer> getCommandList()
+	{
+		return hCommands;
+	}
+	
 	/**
 	 * Returns whether or not spout is on the server.
 	 * 
@@ -422,6 +434,8 @@ public class DispNameChanger extends JavaPlugin
 			
 			log.info(dnc_long + localization.getString(DNCStrings.INFO_SPOUT));
 		}
+		
+		log.info(dnc_long + localization.getString(DNCStrings.INFO_DNC_COMMANDS));
 		
 		log.info(dnc_long
 				+ localization.getString(DNCStrings.INFO_DNC_ENABLED));
@@ -1008,6 +1022,7 @@ public class DispNameChanger extends JavaPlugin
 	private void formatTranslations()
 	{
 		Object[] spoutArgs = new Object[1];
+		
 		if (pSpout != null)
 		{
 			spoutArgs[0] = pSpout.getDescription().getVersion();
@@ -1036,6 +1051,8 @@ public class DispNameChanger extends JavaPlugin
 		{ getDescription().getVersion(), sb.toString(),
 				getDescription().getName() };
 		
+		Object[] dncCommands = { hCommands.size(), hCommands.toString() };
+		
 		MessageFormat formatter = new MessageFormat("");
 		
 		formatter.setLocale(locale);
@@ -1062,6 +1079,10 @@ public class DispNameChanger extends JavaPlugin
 		
 		localization.setString(DNCStrings.INFO_DB_MAKE,
 				formatter.format(dncArgs));
+		
+		formatter.applyPattern(localization.getString(DNCStrings.INFO_DNC_COMMANDS));
+		
+		localization.setString(DNCStrings.INFO_DNC_COMMANDS, formatter.format(dncCommands));
 	}
 	
 	/**
@@ -1165,6 +1186,38 @@ public class DispNameChanger extends JavaPlugin
 			log.severe(dnc_long + "Reverting to English!");
 			
 			locale = Locale.ENGLISH;
+		}
+		
+		ConfigurationSection section = conf.getConfigurationSection("commands");
+		
+		if(section != null)
+		{
+			Set<String> commands = section.getKeys(false);
+			
+			for (String s: commands)
+			{
+				if(conf.isInt("commands." + s))
+				{
+					int iCount = conf.getInt("commands." + s);
+					
+					if(iCount < 0)
+					{
+						hCommands.put(s, new Integer(0));
+						
+						conf.set("commands." + s, 0);
+					}
+					else
+					{
+						hCommands.put(s, new Integer(iCount));
+					}
+				}
+				else
+				{
+					hCommands.put(s, new Integer(0));
+					
+					conf.set("commands." + s, 0);
+				}
+			}
 		}
 		
 		try

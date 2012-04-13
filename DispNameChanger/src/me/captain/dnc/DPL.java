@@ -70,7 +70,8 @@ public class DPL implements Listener
 			Object[] user =
 			{ player.getDisplayName() };
 			
-			formatter.applyPattern(locale.getString(DNCStrings.INFO_PLAYER_DEATH));
+			formatter.applyPattern(locale
+					.getString(DNCStrings.INFO_PLAYER_DEATH));
 			
 			event.setDeathMessage(formatter.format(user));
 		}
@@ -95,7 +96,8 @@ public class DPL implements Listener
 			Object[] user =
 			{ event.getPlayer().getDisplayName(), ChatColor.YELLOW };
 			
-			formatter.applyPattern(locale.getString(DNCStrings.INFO_PLAYER_JOIN));
+			formatter.applyPattern(locale
+					.getString(DNCStrings.INFO_PLAYER_JOIN));
 			
 			event.setJoinMessage(ChatColor.YELLOW + formatter.format(user));
 		}
@@ -140,7 +142,8 @@ public class DPL implements Listener
 			Object[] user =
 			{ player.getDisplayName(), ChatColor.YELLOW };
 			
-			formatter.applyPattern(locale.getString(DNCStrings.INFO_PLAYER_KICK));
+			formatter.applyPattern(locale
+					.getString(DNCStrings.INFO_PLAYER_KICK));
 			
 			event.setLeaveMessage(ChatColor.YELLOW + formatter.format(user));
 		}
@@ -177,7 +180,8 @@ public class DPL implements Listener
 			Object[] user =
 			{ player.getDisplayName(), ChatColor.YELLOW };
 			
-			formatter.applyPattern(locale.getString(DNCStrings.INFO_PLAYER_QUIT));
+			formatter.applyPattern(locale
+					.getString(DNCStrings.INFO_PLAYER_QUIT));
 			
 			event.setQuitMessage(ChatColor.YELLOW + formatter.format(user));
 			
@@ -261,12 +265,16 @@ public class DPL implements Listener
 			
 			boolean bNamesAdded = false;
 			
+			int iReplaceMax = checkFiltered(saArgs[0]);
+			
+			int iReplaceCount = 0;
+			
 			sbCommand = new StringBuilder();
 			
 			sbCommand.append(args[0]).append(" ");
 			
 			for (String s : saParsed)
-			{
+			{				
 				target = plugin.checkName(s);
 				
 				if (target == null)
@@ -282,14 +290,28 @@ public class DPL implements Listener
 					
 					if (!target[0].getName().equalsIgnoreCase(s))
 					{
-						
-						sbCommand.append(target[0].getName()).append(" ");
+						if(iReplaceMax > -1)
+						{
+							if(iReplaceCount < iReplaceMax)
+							{
+								sbCommand.append(target[0].getName()).append(" ");
+								
+								iReplaceCount++;
+							}
+							else
+							{
+								sbCommand.append(s).append(" ");
+							}
+						}
+						else
+						{
+							sbCommand.append(target[0].getName()).append(" ");
+						}
 						
 						bNamesAdded = true;
 					}
 					else
 					{
-						
 						sbCommand.append(s).append(" ");
 					}
 					break;
@@ -332,7 +354,8 @@ public class DPL implements Listener
 	
 	/**
 	 * Checks to see if a command matches one of the current plugin
-	 * commands.
+	 * commands, or a command we should not filter as indicated by the
+	 * configuration file.
 	 * 
 	 * @param command
 	 *            the command to check for.
@@ -372,6 +395,46 @@ public class DPL implements Listener
 			}
 		}
 		
+		HashMap<String, Integer> cmdFilter = plugin.getCommandList();
+		
+		for(String s: cmdFilter.keySet())
+		{
+			if(s.equalsIgnoreCase(sCommand) && cmdFilter.get(s) == 0)
+			{
+				return true;
+			}
+		}
+		
 		return false;
+	}
+	
+	/**
+	 * Checks to see if the given command is in the filtered list.
+	 * @param command
+	 * @return
+	 */
+	private int checkFiltered(String command)
+	{
+		String sCommand;
+		
+		if(command.startsWith("/"))
+		{
+			sCommand = command.substring(1, command.length());
+		}
+		else
+		{
+			sCommand = command;
+		}
+		
+		HashMap<String, Integer> cmdFilter = plugin.getCommandList();
+		
+		for(String s: cmdFilter.keySet())
+		{
+			if(s.equalsIgnoreCase(sCommand))
+			{
+				return cmdFilter.get(s);
+			}
+		}
+		return -1;
 	}
 }
