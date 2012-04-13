@@ -54,6 +54,11 @@ public enum DNCStrings
 	INFO_DB_MAKE,
 	
 	/**
+	 * Statement about loaded commands.
+	 */
+	INFO_DNC_COMMANDS,
+	
+	/**
 	 * Statement about disabling DNC.
 	 */
 	INFO_DNC_DISABLED,
