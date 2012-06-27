@@ -1,11 +1,17 @@
 package me.captain.dnc;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -14,6 +20,7 @@ import javax.persistence.PersistenceException;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
@@ -48,9 +55,13 @@ public class DispNameChanger extends JavaPlugin
 	
 	private ChatColor ccPrefix;
 	
+	private HashMap<String, Integer> hCommands;
+	
 	private Locale locale;
 	
 	private Plugin pSpout;
+	
+	private Properties pVersion;
 	
 	private String sPrefixFull;
 	
@@ -103,6 +114,10 @@ public class DispNameChanger extends JavaPlugin
 		playerlistener = new DPL();
 		
 		spoutListener = new DPLSpout();
+		
+		pVersion = new Properties();
+		
+		hCommands = new HashMap<String, Integer>();
 		
 		bBroadcastAll = true;
 		
@@ -266,21 +281,21 @@ public class DispNameChanger extends JavaPlugin
 	
 	public boolean isLastColorReset(String input)
 	{
-		if(!input.contains(ChatColor.RESET.toString()))
+		if (!input.contains(ChatColor.RESET.toString()))
 		{
 			return false;
 		}
 		
 		ChatColor ccColor = lastColorUsed(input);
 		
-		if(ccColor != null && ccColor == ChatColor.RESET)
+		if (ccColor != null && ccColor == ChatColor.RESET)
 		{
 			return true;
 		}
 		
 		return false;
 	}
-
+	
 	@SuppressWarnings(
 	{ "unchecked", "rawtypes" })
 	@Override
@@ -333,6 +348,11 @@ public class DispNameChanger extends JavaPlugin
 		return ccPrefix;
 	}
 	
+	public HashMap<String, Integer> getCommandList()
+	{
+		return hCommands;
+	}
+	
 	/**
 	 * Returns whether or not spout is on the server.
 	 * 
@@ -363,7 +383,7 @@ public class DispNameChanger extends JavaPlugin
 	 */
 	public ChatColor lastColorUsed(String input)
 	{
-		if(!checkForColors(input))
+		if (!checkForColors(input))
 		{
 			return null;
 		}
@@ -422,6 +442,9 @@ public class DispNameChanger extends JavaPlugin
 			
 			log.info(dnc_long + localization.getString(DNCStrings.INFO_SPOUT));
 		}
+		
+		log.info(dnc_long
+				+ localization.getString(DNCStrings.INFO_DNC_COMMANDS));
 		
 		log.info(dnc_long
 				+ localization.getString(DNCStrings.INFO_DNC_ENABLED));
@@ -665,7 +688,7 @@ public class DispNameChanger extends JavaPlugin
 			return sb.toString();
 		}
 		
-		if(isLastColorReset(sName))
+		if (isLastColorReset(sName))
 		{
 			return sb.toString();
 		}
@@ -854,7 +877,7 @@ public class DispNameChanger extends JavaPlugin
 		{
 			if (input.startsWith(c.toString()))
 			{
-				if(c.isColor())
+				if (c.isColor())
 				{
 					return true;
 				}
@@ -1008,6 +1031,7 @@ public class DispNameChanger extends JavaPlugin
 	private void formatTranslations()
 	{
 		Object[] spoutArgs = new Object[1];
+		
 		if (pSpout != null)
 		{
 			spoutArgs[0] = pSpout.getDescription().getVersion();
@@ -1036,6 +1060,9 @@ public class DispNameChanger extends JavaPlugin
 		{ getDescription().getVersion(), sb.toString(),
 				getDescription().getName() };
 		
+		Object[] dncCommands =
+		{ hCommands.size(), hCommands.toString() };
+		
 		MessageFormat formatter = new MessageFormat("");
 		
 		formatter.setLocale(locale);
@@ -1062,6 +1089,12 @@ public class DispNameChanger extends JavaPlugin
 		
 		localization.setString(DNCStrings.INFO_DB_MAKE,
 				formatter.format(dncArgs));
+		
+		formatter.applyPattern(localization
+				.getString(DNCStrings.INFO_DNC_COMMANDS));
+		
+		localization.setString(DNCStrings.INFO_DNC_COMMANDS,
+				formatter.format(dncCommands));
 	}
 	
 	/**
@@ -1072,6 +1105,9 @@ public class DispNameChanger extends JavaPlugin
 		File fConfig = new File(this.getDataFolder() + File.separator
 				+ "config.yml");
 		
+		File fProperties = new File(this.getDataFolder() + File.separator
+				+ "VERSION");
+		
 		if (!fConfig.exists())
 		{
 			this.saveDefaultConfig();
@@ -1079,7 +1115,59 @@ public class DispNameChanger extends JavaPlugin
 		
 		FileConfiguration conf = getConfig();
 		
-		conf.options().copyDefaults(true);
+		if (!fProperties.exists())
+		{
+			log.info(this.dnc_long
+					+ "Unable to find Config Version info. Copying Defaults from Default Config.");
+			
+			conf.options().copyDefaults(true);
+		}
+		else
+		{
+			try
+			{
+				pVersion.load(new FileInputStream(fProperties));
+			}
+			catch (FileNotFoundException e)
+			{
+				log.throwing("DispNameChanger", "loadConfig", e);
+			}
+			catch (IOException e)
+			{
+				log.throwing("DispNameChanger", "loadConfig", e);
+			}
+			
+			if (pVersion.containsKey("VERSION"))
+			{
+				if (!pVersion.getProperty("VERSION").equals(
+						this.getDescription().getVersion()))
+				{
+					log.info(this.dnc_long + "Different Config Version Detected: "
+							+ pVersion.getProperty("VERSION")
+							+ " Copying Defaults from Default Config.");
+					
+					conf.options().copyDefaults(true);
+				}
+			}
+			else
+			{
+				log.info(this.dnc_long
+						+ "Unable to find Config Version info. Copying defaults from Default Config.");
+				
+				conf.options().copyDefaults(true);
+			}
+		}
+		
+		pVersion.put("VERSION", this.getDescription().getVersion());
+		
+		try
+		{
+			pVersion.store(new FileWriter(fProperties), null);
+		}
+		catch (IOException e)
+		{
+			log.throwing("DispNameChanger", "loadConfig", e);
+		}
 		
 		bChangeDeath = conf.getBoolean("messages.death");
 		
@@ -1165,6 +1253,39 @@ public class DispNameChanger extends JavaPlugin
 			log.severe(dnc_long + "Reverting to English!");
 			
 			locale = Locale.ENGLISH;
+		}
+		
+		ConfigurationSection section = conf
+				.getConfigurationSection("commands");
+		
+		if (section != null)
+		{
+			Set<String> commands = section.getKeys(false);
+			
+			for (String s : commands)
+			{
+				if (conf.isInt("commands." + s))
+				{
+					int iCount = conf.getInt("commands." + s);
+					
+					if (iCount < 0)
+					{
+						hCommands.put(s, new Integer(0));
+						
+						conf.set("commands." + s, 0);
+					}
+					else
+					{
+						hCommands.put(s, new Integer(iCount));
+					}
+				}
+				else
+				{
+					hCommands.put(s, new Integer(0));
+					
+					conf.set("commands." + s, 0);
+				}
+			}
 		}
 		
 		try
