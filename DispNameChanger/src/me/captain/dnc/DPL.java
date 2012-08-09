@@ -3,7 +3,10 @@ package me.captain.dnc;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.List;
+import java.util.TimerTask;
 import java.util.logging.Logger;
+
+import me.captain.dnc.DispNameAPI.MessageType;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -29,13 +32,13 @@ public class DPL implements Listener
 {
 	private static final Logger log = Bukkit.getLogger();
 	
-	private HashMap<String, Integer> entityID;
-	
 	private DispNameChanger plugin;
 	
 	private MessageFormat formatter;
 	
 	private DNCLocalization locale;
+	
+	private DispNameAPI api;
 	
 	/**
 	 * Constructs a new DispNameChange Player Listener.
@@ -47,11 +50,11 @@ public class DPL implements Listener
 	{
 		plugin = DispNameChanger.getInstance();
 		
+		api = DispNameAPI.getInstance();
+		
 		locale = plugin.getLocalization();
 		
 		formatter = new MessageFormat("");
-		
-		entityID = new HashMap<String, Integer>();
 	}
 	
 	/**
@@ -87,9 +90,9 @@ public class DPL implements Listener
 	{
 		Player player = event.getPlayer();
 		
-		entityID.put(player.getName(), new Integer(player.getEntityId()));
+		api.restoreNick(player);
 		
-		plugin.restoreNick(player);
+		plugin.getOrderedPlayers().put(player.getName(), player);
 		
 		if (plugin.changeLogin())
 		{
@@ -104,9 +107,19 @@ public class DPL implements Listener
 		
 		if (plugin.isSpoutEnabled())
 		{
+			
 			SpoutPlayer spoutTarget = (SpoutPlayer) player;
 			
+			System.out.println("Join - DisplayName: " + player.getDisplayName());
+			
+			System.out.println("Join - Title - Before: " + spoutTarget.getTitle());
+			
 			spoutTarget.setTitle(player.getDisplayName());
+			
+			System.out.println("Join - Title - After: " + spoutTarget.getTitle());
+			
+			plugin.getServer().getScheduler()
+				.scheduleSyncDelayedTask(plugin, new RenameTask(player), 1L);
 		}
 	}
 	
@@ -125,17 +138,8 @@ public class DPL implements Listener
 		}
 		
 		Player player = event.getPlayer();
-		
-		int iEntityID = player.getEntityId();
-		
-		int iStoredID = entityID.get(player.getName()).intValue();
-		
-		if (iEntityID == iStoredID)
-		{
-			// plugin.storeNick(player);
-			
-			entityID.put(player.getName(), -1);
-		}
+
+		savePlayer(player);
 		
 		if (plugin.changeKick())
 		{
@@ -160,20 +164,7 @@ public class DPL implements Listener
 	{
 		Player player = event.getPlayer();
 		
-		int iEntityID = player.getEntityId();
-		
-		int iStoredID = entityID.get(player.getName()).intValue();
-		
-		if (iEntityID == iStoredID)
-		{
-			// plugin.storeNick(player);
-			
-			entityID.remove(player.getName());
-		}
-		else if (iEntityID == -1)
-		{
-			entityID.remove(player.getName());
-		}
+		savePlayer(player);
 		
 		if (plugin.changeLogin())
 		{
@@ -213,10 +204,8 @@ public class DPL implements Listener
 		// Ensure that we aren't matching our command.
 		if (args[0].startsWith("/"))
 		{
-			
 			if (checkCommands(args[0]))
 			{
-				
 				return;
 			}
 		}
@@ -228,12 +217,7 @@ public class DPL implements Listener
 			break;
 		// Possible command + DispName
 		case 2:
-			target = plugin.checkName(args[1]);
-			
-			if (target == null)
-			{
-				break;
-			}
+			target = api.checkName(args[1]);
 			
 			switch (target.length)
 			{
@@ -253,15 +237,14 @@ public class DPL implements Listener
 			default:
 				event.setCancelled(true);
 				
-				player.sendMessage(ChatColor.RED + plugin.dnc_short
-						+ locale.getString(DNCStrings.ERROR_MULTI_MATCH));
+				api.sendMessage(DNCStrings.ERROR_MULTI_MATCH, player, null, MessageType.ERROR);
 			}
 			break;
 		// Possible Command + Multipart DispName
 		default:
 			String[] saArgs = event.getMessage().split(" ", 2);
 			
-			String[] saParsed = plugin.parseArgumentsAll(saArgs[1]);
+			String[] saParsed = api.parseArgumentsAll(saArgs[1]);
 			
 			boolean bNamesAdded = false;
 			
@@ -275,9 +258,9 @@ public class DPL implements Listener
 			
 			for (String s : saParsed)
 			{				
-				target = plugin.checkName(s);
+				target = api.checkName(s);
 				
-				if (target == null)
+				if (target.length == 0)
 				{
 					sbCommand.append(s).append(" ");
 					
@@ -319,8 +302,7 @@ public class DPL implements Listener
 					
 					event.setCancelled(true);
 					
-					player.sendMessage(ChatColor.RED + plugin.dnc_short
-							+ locale.getString(DNCStrings.ERROR_MULTI_MATCH));
+					api.sendMessage(DNCStrings.ERROR_MULTI_MATCH, player, null, MessageType.ERROR);
 					
 					sbCommand = null;
 					
@@ -344,7 +326,7 @@ public class DPL implements Listener
 			
 			StringBuilder sb = new StringBuilder();
 			
-			sb.append(plugin.dnc_long).append("Converted |")
+			sb.append(DNCStrings.dnc_long).append("Converted |")
 					.append(event.getMessage()).append("| to |")
 					.append(sbCommand.toString()).append("|.");
 			
@@ -436,5 +418,51 @@ public class DPL implements Listener
 			}
 		}
 		return -1;
+	}
+	
+	private void removeOrderedPlayer(Player p)
+	{
+		if(plugin.getOrderedPlayers().containsKey(p.getName()))
+		{
+			plugin.getOrderedPlayers().remove(p.getName());
+		}
+	}
+
+	private void savePlayer(Player player)
+	{
+		if(plugin.isSaveOnQuit())
+		{
+			api.storeNick(player);
+		}
+		
+		removeOrderedPlayer(player);
+	}
+	
+	/**
+	 * Handles setting the title for everyone when a new player joins.
+	 * 
+	 * @author Mark 'SniperFodder' Gunnett
+	 * 
+	 */
+	private class RenameTask extends TimerTask
+	{
+		private SpoutPlayer player;
+		
+		public RenameTask(Player player)
+		{
+			this.player = (SpoutPlayer) player;
+		}
+		
+		@Override
+		public void run()
+		{
+			System.out.println("Rename - DisplayName: " + player.getDisplayName());
+			
+			System.out.println("Rename - Title - Before: " + player.getTitle());
+			
+			player.setTitle(player.getDisplayName());
+			
+			System.out.println("Rename - Title - After: " + player.getTitle());
+		}
 	}
 }

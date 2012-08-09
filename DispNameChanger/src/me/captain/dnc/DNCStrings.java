@@ -11,6 +11,11 @@ public enum DNCStrings
 	ERROR_BAD_ARGS,
 	
 	/**
+	 * For when Argument Type does not match needed type.
+	 */
+	ERROR_BAD_INPUT,
+	
+	/**
 	 * For when user does not exist or is not online.
 	 */
 	ERROR_BAD_USER,
@@ -44,7 +49,10 @@ public enum DNCStrings
 	INFO_CHECK_MULTI_LIST,
 	
 	/**
-	 * X is Y for single match
+	 * {0} is really {1}.<br><br>
+	 * 
+	 * Argument {0}: Queried name<br>
+	 * Argument {1}: Actual name<br>
 	 */
 	INFO_CHECK_SINGLE,
 	
@@ -67,6 +75,25 @@ public enum DNCStrings
 	 * Statement about enabling DNC.
 	 */
 	INFO_DNC_ENABLED,
+	
+	/**
+	 * List of users - Page [{0}/{1}] - Type /{2} {3} for more.<br>
+	 * 
+	 * Argument {0}: Current page<br>
+	 * Argument {1}: Max Pages<br>
+	 * Argument {2}: Command to Type for list<br>
+	 * Argument {3}: Next page<br>
+	 * 
+	 */
+	INFO_LIST,
+	
+	/**
+	 * List of users - Page[{0}/{1}]<br><br>
+	 * 
+	 * Argument {0}: Current page<br>
+	 * Argument {1}: Max pages<br>
+	 */
+	INFO_LIST_MAX,
 	
 	/**
 	 * Statement to caller about name change.
@@ -109,6 +136,11 @@ public enum DNCStrings
 	INFO_PLAYER_QUIT,
 	
 	/**
+	 * Called if saving completely disabled by config options.
+	 */
+	INFO_SAVE_DISABLED,
+	
+	/**
 	 * Spout found statement.
 	 */
 	INFO_SPOUT,
@@ -132,29 +164,11 @@ public enum DNCStrings
 	PERMISSION_CHECK,
 	
 	/**
-	 * Error about using Bold color code.
+	 * Error about using illegal color in name.
+	 * 
+	 * Argument {0}: Color name
 	 */
-	PERMISSION_COLOR_BOLD,
-	
-	/**
-	 * Error about using Italic Color Code.
-	 */
-	PERMISSION_COLOR_ITALIC,
-	
-	/**
-	 * Error about using Magic Color Code.
-	 */
-	PERMISSION_COLOR_MAGIC,
-	
-	/**
-	 * Error about using Strikethrough color code.
-	 */
-	PERMISSION_COLOR_STRIKETHROUGH,
-	
-	/**
-	 * Error about using Underline color code.
-	 */
-	PERMISSION_COLOR_UNDERLINE,
+	PERMISSION_COLOR,
 	
 	/**
 	 * Error about listing display names.
@@ -172,7 +186,18 @@ public enum DNCStrings
 	PERMISSION_SPACES,
 	
 	/**
+	 * Error about using illegal style in name.
+	 * 
+	 * Argument {0}: Style Name
+	 */
+	PERMISSION_STYLE,
+	
+	/**
 	 * Error about changing names.
 	 */
 	PERMISSION_USE;
+	
+	public static final String dnc_long = "[DispNameChanger] ";
+	
+	public static final String dnc_short = "[DNC] ";
 }

@@ -1,16 +1,20 @@
 package me.captain.dnc;
 
-import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.logging.Logger;
+
+import me.captain.dnc.DispNameAPI.MessageType;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.getspout.spoutapi.player.SpoutPlayer;
 
 /**
  * Command executor for the DispNameChanger Plugin.
@@ -25,11 +29,13 @@ import org.getspout.spoutapi.player.SpoutPlayer;
  */
 public class DispNameCE implements CommandExecutor
 {
+	public static final Logger log = Bukkit.getLogger();
+	
+	public static final int MAX_PLAYERS_PER_PAGE = 7;
+	
 	private DispNameChanger plugin;
 	
-	private MessageFormat formatter;
-	
-	private DNCLocalization locale;
+	private DispNameAPI api;
 	
 	/**
 	 * Constructs a new DispNameCE.
@@ -43,1112 +49,569 @@ public class DispNameCE implements CommandExecutor
 		
 		plugin = DispNameChanger.getInstance();
 		
-		locale = plugin.getLocalization();
-		
-		formatter = new MessageFormat("");
-		
-		formatter.setLocale(plugin.getLocale());
+		api = DispNameAPI.getInstance();
 	}
 	
 	/**
-	 * Checks to see if the given player has the 'dispname.announce'
-	 * permission for nick broadcasts.
+	 * Handles checking of a player's name.
 	 * 
-	 * @param p
-	 *            the player to check.
+	 * @param sender
+	 *            the entity that executed the command.
 	 * 
-	 * @return true if they have it, false otherwise.
+	 * @param args
+	 *            the args given with the command.
+	 * 
+	 * @return True if a valid command was given.
 	 */
-	public boolean canBroadcast(Player p)
+	public boolean check(CommandSender sender, String[] args)
 	{
-		if (p == null)
+		String[] saArgs = api.parseArguments(args);
+		
+		// No Name to check for.
+		if (saArgs.length == 0)
 		{
-			return true;
+			return false;
+		}
+		// Name Given to check for.
+		else if (saArgs.length == 1)
+		{
+			Player[] players = api.checkName(saArgs[0]);
+			
+			if (players.length == 0)
+			{
+				api.sendMessage(DNCStrings.ERROR_BAD_USER, sender, null,
+						MessageType.ERROR);
+				
+				return true;
+			}
+			else if (players.length == 1)
+			{
+				String sName = players[0].getName();
+				
+				String sDisplay = players[0].getDisplayName();
+				
+				sDisplay = api.stripPrefix(sDisplay);
+				
+				sDisplay = ChatColor.stripColor(sDisplay);
+				
+				Object[] users = new Object[2];
+				
+				if (sDisplay.equals(saArgs[0]))
+				{
+					users[0] = (players[0].getDisplayName());
+					
+					users[1] = sName;
+				}
+				else
+				{
+					users[0] = sName;
+					
+					users[1] = (players[0].getDisplayName());
+				}
+				
+				api.sendMessage(DNCStrings.INFO_CHECK_SINGLE, sender, users,
+						MessageType.INFO);
+				
+				return true;
+			}
+			else
+			{
+				Object[] users = new Object[2];
+				
+				users[0] = saArgs[0];
+				
+				String sUsers = "";
+				
+				for (Player p : players)
+				{
+					sUsers += p.getName() + ", ";
+				}
+				
+				sUsers = sUsers.substring(0, sUsers.lastIndexOf(','));
+				
+				users[1] = sUsers;
+				
+				api.sendMessage(DNCStrings.INFO_CHECK_MULTI, sender, null,
+						MessageType.CONFIRMATION);
+				
+				api.sendMessage(DNCStrings.INFO_CHECK_MULTI_LIST, sender,
+						users, MessageType.INFO);
+				
+				return true;
+			}
+		}
+		else if (saArgs.length > 1)
+		{
+			api.sendMessage(DNCStrings.ERROR_BAD_ARGS, sender, null,
+					MessageType.ERROR);
 		}
 		
-		return p.hasPermission("dispname.announce");
+		return false;
 	}
 	
 	/**
-	 * Checks to see if the given player has the 'dispname.color.bold'
-	 * permission for color code usage.
+	 * Handles listing of user with changed display names. Has pagination.
 	 * 
-	 * @param p
-	 *            the player to check.
+	 * @param sender
+	 *            the entity that executed the command.
 	 * 
-	 * @return true if they have it, false otherwise.
+	 * @param args
+	 *            the args given with the command.
+	 * 
+	 * @return True if a valid command was given.
 	 */
-	public boolean canUseBoldColor(Player p)
+	public boolean list(CommandSender sender, String[] args)
 	{
-		if (p == null)
+		Object[] oArgs = new Object[4];
+		
+		Object[] oNames = new Object[2];
+		
+		Player[] aPlayers;
+		
+		int iPageNumber;
+		
+		int iMaxPages;
+		
+		int iStartIndex;
+		
+		// Get the page Number
+		if (args.length == 0)
 		{
-			return true;
+			iPageNumber = 1;
+		}
+		else if (args.length > 1)
+		{
+			api.sendMessage(DNCStrings.ERROR_BAD_ARGS, sender, null,
+					MessageType.ERROR);
+			
+			return false;
+		}
+		else
+		{
+			try
+			{
+				iPageNumber = Integer.parseInt(args[0]);
+			}
+			catch (NumberFormatException e)
+			{
+				api.sendMessage(DNCStrings.ERROR_BAD_INPUT, sender, null,
+						MessageType.ERROR);
+				
+				return false;
+			}
+			
+			if(iPageNumber <= 0)
+			{
+				iPageNumber = 1;
+			}
 		}
 		
-		return p.hasPermission("dispname.color.bold");
-	}
-	
-	/**
-	 * Checks to see if the Player can use the command.
-	 * 
-	 * @param p
-	 *            The player to check the permission for.
-	 * 
-	 * @return true if the player can use the command, false otherwise.
-	 */
-	public boolean canUseCheckName(Player p)
-	{
-		if (p == null)
+		aPlayers = getPlayerList();
+		
+		// Get the page Variables
+		iMaxPages = getMaxPages(aPlayers.length);
+		
+		iStartIndex = getMinPlayerIndex(iPageNumber, iMaxPages);
+		
+		// Ensure we don't exceed max pages.
+		if (iPageNumber >= iMaxPages)
 		{
-			return true;
+			iPageNumber = iMaxPages;
 		}
 		
-		return p.hasPermission("dispname.check");
-	}
-	
-	/**
-	 * Checks to see if the Player can use the command.
-	 * 
-	 * @param p
-	 *            The player to check the permission for.
-	 * 
-	 * @return true if the player can use the command, false otherwise.
-	 */
-	public boolean canUseChangeName(Player p)
-	{
-		if (p == null)
+		oArgs[0] = "" + iPageNumber;
+		
+		oArgs[1] = "" + iMaxPages;
+		
+		oArgs[2] = DNCCommands.LIST.getName();
+		
+		oArgs[3] = "" + (iPageNumber + 1);
+		
+		if (iPageNumber >= iMaxPages)
 		{
-			return true;
+			api.sendMessage(DNCStrings.INFO_LIST_MAX, sender, oArgs,
+					MessageType.CONFIRMATION);
+		}
+		else
+		{
+			api.sendMessage(DNCStrings.INFO_LIST, sender, oArgs,
+					MessageType.CONFIRMATION);
 		}
 		
-		return p.hasPermission("dispname.change");
-	}
-	
-	/**
-	 * Checks to see if the Player can use the command.
-	 * 
-	 * @param p
-	 *            The player to check the permission for.
-	 * 
-	 * @return true if the player can use the command, false otherwise.
-	 */
-	public boolean canUseChangeNameSpace(Player p)
-	{
-		if (p == null)
+		for (int iLoop1 = iStartIndex; iLoop1 <= ((iStartIndex + MAX_PLAYERS_PER_PAGE) - 1); iLoop1++)
 		{
-			return true;
+			if(iLoop1 > (aPlayers.length - 1))
+			{
+				break;
+			}
+			
+			oNames[0] = aPlayers[iLoop1].getName();
+			
+			oNames[1] = aPlayers[iLoop1].getDisplayName();
+			
+			api.sendMessage(DNCStrings.INFO_CHECK_SINGLE, sender, oNames,
+					MessageType.INFO);
 		}
 		
-		return p.hasPermission("dispname.changespace");
-	}
-	
-	/**
-	 * Checks to see if the Player can use the command.
-	 * 
-	 * @param p
-	 *            The player to check the permission for.
-	 * 
-	 * @return true if the player can use the command, false otherwise.
-	 */
-	public boolean canUseChangeNameOther(Player p)
-	{
-		if (p == null)
-		{
-			return true;
-		}
-		
-		return p.hasPermission("dispname.changeother");
-	}
-	
-	/**
-	 * Checks to see if the player can use the list command.
-	 * 
-	 * @param p
-	 *            the player to check the permission for.
-	 * 
-	 * @return true if the player can use the command, false otherwise.
-	 */
-	public boolean canUseList(Player p)
-	{
-		if (p == null)
-		{
-			return true;
-		}
-		
-		return p.hasPermission("dispname.list");
-	}
-	
-	/**
-	 * Checks to see if the given player has the 'dispname.color.italic'
-	 * permission for color code usage.
-	 * 
-	 * @param p
-	 *            the player to check.
-	 * 
-	 * @return true if they have it, false otherwise.
-	 */
-	public boolean canUseItalicColor(Player p)
-	{
-		if (p == null)
-		{
-			return true;
-		}
-		
-		return p.hasPermission("dispname.color.italic");
-	}
-	
-	/**
-	 * Checks to see if the given player has the 'dispname.color.magic'
-	 * permission for color code usage.
-	 * 
-	 * @param p
-	 *            the player to check.
-	 * 
-	 * @return true if they have it, false otherwise.
-	 */
-	public boolean canUseMagicColor(Player p)
-	{
-		if (p == null)
-		{
-			return true;
-		}
-		
-		return p.hasPermission("dispname.color.magic");
-	}
-	
-	/**
-	 * Checks to see if the given player has the 'dispname.color.strike'
-	 * permission for color code usage.
-	 * 
-	 * @param p
-	 *            the player to check.
-	 * 
-	 * @return true if they have it, false otherwise.
-	 */
-	public boolean canUseStrikethroughColor(Player p)
-	{
-		if (p == null)
-		{
-			return true;
-		}
-		
-		return p.hasPermission("dispname.color.strike");
-	}
-	
-	/**
-	 * Checks to see if the given player has the 'dispname.color.underline'
-	 * permission for color code usage.
-	 * 
-	 * @param p
-	 *            the player to check.
-	 * 
-	 * @return true if they have it, false otherwise.
-	 */
-	public boolean canUseUnderlineColor(Player p)
-	{
-		if (p == null)
-		{
-			return true;
-		}
-		
-		return p.hasPermission("dispname.color.underline");
+		return true;
 	}
 	
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd,
 			String commandLabel, String[] args)
 	{
-		Player changer = null;
-		
-		if (sender instanceof Player)
-		{
-			changer = (Player) sender;
-		}
-		
 		// Check for the rename command.
 		if (cmd.getName().equalsIgnoreCase(DNCCommands.RENAME.getName()))
 		{
-			// parse Arguments into <target> <Name>
-			String[] saArgs = plugin.parseArguments(args);
-			
-			// Ensure that the user can run the command.
-			if (canUseChangeName(changer))
-			{
-				// Changing own name.
-				if (args.length == 1)
-				{
-					// Ensure we aren't console.
-					if (changer == null)
-					{
-						sender.sendMessage(plugin.dnc_short
-								+ locale.getString(DNCStrings.ERROR_CONSOLE_RENAME));
-						
-						return false;
-					}
-				}
-				
-				// Error parsing args
-				if (saArgs == null)
-				{
-					return false;
-				}
-				
-				switch (saArgs.length)
-				{
-				
-				/*
-				 * If Args returned is of size 1, changing own name.
-				 */
-				case 1:
-					if (plugin.useScoreboard())
-					{
-						// Ensure unique
-						if (!checkUnique(saArgs[0]))
-						{
-							changer.sendMessage(ChatColor.RED
-									+ plugin.dnc_short
-									+ locale.getString(DNCStrings.ERROR_NON_UNIQUE));
-							
-							return true;
-						}
-					}
-					
-					// Ensure we can use protected color codes.
-					if (checkForIllegalColors(changer, saArgs[0]))
-					{
-						return true;
-					}
-					
-					changeDisplayName(changer, saArgs[0]);
-					
-					return true;
-					
-					/*
-					 * If Args returned is of size 2, Changing someone
-					 * else's name.
-					 */
-				case 2:
-					// Ensure we can change other names.
-					if (canUseChangeNameOther(changer))
-					{
-						// Pull the target we are changing.
-						Player[] players = plugin.checkName(saArgs[0]);
-						
-						if (players == null)
-						{
-							if (changer != null)
-							{
-								changer.sendMessage(ChatColor.RED
-										+ plugin.dnc_short
-										+ locale.getString(DNCStrings.ERROR_BAD_USER));
-							}
-							else
-							{
-								sender.sendMessage(plugin.dnc_short
-										+ locale.getString(DNCStrings.ERROR_BAD_USER));
-							}
-							
-							return true;
-						}
-						
-						// Ensure there is only one target.
-						if (players.length == 1)
-						{
-							if (saArgs[1].contains(" "))
-							{
-								// Ensure we can change spaces.
-								if (canUseChangeNameSpace(changer))
-								{
-									if (plugin.useScoreboard())
-									{
-										if (!checkUnique(saArgs[1]))
-										{
-											changer.sendMessage(ChatColor.RED
-													+ plugin.dnc_short
-													+ locale.getString(DNCStrings.ERROR_NON_UNIQUE));
-											
-											return true;
-										}
-									}
-									
-									// Ensure we can use protected color
-									// codes.
-									if (checkForIllegalColors(changer,
-											saArgs[0]))
-									{
-										return true;
-									}
-									
-									// Change the targets name.
-									changeDisplayName(changer, players[0],
-											saArgs[0], saArgs[1]);
-									
-									return true;
-								}
-								else
-								{
-									changer.sendMessage(ChatColor.RED
-											+ plugin.dnc_short
-											+ locale.getString(DNCStrings.PERMISSION_SPACES));
-									
-									return true;
-								}
-							}
-							else
-							{
-								if (changer != null
-										&& changer.equals(players[0]))
-								{
-									if (plugin.useScoreboard())
-									{
-										if (!checkUnique(saArgs[1]))
-										{
-											changer.sendMessage(ChatColor.RED
-													+ plugin.dnc_short
-													+ locale.getString(DNCStrings.ERROR_NON_UNIQUE));
-											
-											return true;
-										}
-									}
-									
-									// Ensure we can use protected color
-									// codes.
-									if (checkForIllegalColors(changer,
-											saArgs[0]))
-									{
-										return true;
-									}
-									changeDisplayName(changer, saArgs[1]);
-								}
-								else
-								{
-									if (plugin.useScoreboard())
-									{
-										if (!checkUnique(saArgs[1]))
-										{
-											changer.sendMessage(ChatColor.RED
-													+ plugin.dnc_short
-													+ locale.getString(DNCStrings.ERROR_NON_UNIQUE));
-											
-											return true;
-										}
-									}
-									// Change the targets name.
-									changeDisplayName(changer, players[0],
-											saArgs[0], saArgs[1]);
-								}
-								
-								return true;
-							}
-							
-						}
-						else
-						{
-							if (changer != null)
-							{
-								changer.sendMessage(ChatColor.RED
-										+ plugin.dnc_short
-										+ locale.getString(DNCStrings.ERROR_MULTI_MATCH));
-							}
-							else
-							{
-								sender.sendMessage(plugin.dnc_short
-										+ locale.getString(DNCStrings.ERROR_MULTI_MATCH));
-							}
-							return true;
-						}
-					}
-					else
-					{
-						changer.sendMessage(ChatColor.RED
-								+ plugin.dnc_short
-								+ locale.getString(DNCStrings.PERMISSION_OTHER));
-						
-						return true;
-					}
-				}
-			}
-			else
-			{
-				changer.sendMessage(ChatColor.RED + plugin.dnc_short
-						+ locale.getString(DNCStrings.PERMISSION_USE));
-				
-				return true;
-			}
+			return rename(sender, args);
 		}
 		// Reset name command.
 		else if (cmd.getName().equalsIgnoreCase(DNCCommands.RESET.getName()))
 		{
-			if (args.length == 0)
+			return reset(sender, args);
+		}
+		// Check name command.
+		else if (cmd.getName().equalsIgnoreCase(DNCCommands.CHECK.getName()))
+		{
+			return check(sender, args);
+		}
+		// List Names command
+		else if (cmd.getName().equalsIgnoreCase(DNCCommands.LIST.getName()))
+		{
+			return list(sender, args);
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * Handles renaming of users on the server with the given name.
+	 * 
+	 * @param sender
+	 *            the entity that executed the command.
+	 * 
+	 * @param args
+	 *            the args given with the command.
+	 * 
+	 * @return True if a valid command was given.
+	 */
+	public boolean rename(CommandSender sender, String[] args)
+	{
+		// parse Arguments into <target> <Name>
+		String[] saArgs = api.parseArguments(args);
+		
+		// No arguments given. Return false.
+		if (saArgs.length == 0)
+		{
+			return false;
+		}
+		
+		switch (saArgs.length)
+		{
+		// Target = Self
+		case 1:
+			// Ensure we aren't console.
+			if (api.isConsole(sender))
 			{
-				if (changer == null)
+				api.sendMessage(DNCStrings.ERROR_CONSOLE_RENAME, sender, null,
+						MessageType.ERROR);
+				
+				return true;
+			}
+			
+			// Check for colors we aren't allowed to use.
+			ChatColor badColor = api.checkForIllegalColors((Player) sender,
+					saArgs[0]);
+			
+			if (badColor != null)
+			{
+				Object[] obj =
+				{ badColor };
+				
+				if (badColor.isColor())
 				{
-					sender.sendMessage(plugin.dnc_short
-							+ locale.getString(DNCStrings.ERROR_CONSOLE_RENAME));
-					
-					return false;
+					api.sendMessage(DNCStrings.PERMISSION_COLOR, sender, obj,
+							MessageType.ERROR);
 				}
 				else
 				{
-					if (canUseChangeName(changer))
+					api.sendMessage(DNCStrings.PERMISSION_STYLE, sender, obj,
+							MessageType.ERROR);
+				}
+				
+				return true;
+			}
+			
+			// Ensure that we are allowed to use Spaces.
+			if (saArgs[0].contains(" "))
+			{
+				if (!api.canUseChangeNameSpace(sender))
+				{
+					api.sendMessage(DNCStrings.PERMISSION_SPACES, sender,
+							null, MessageType.ERROR);
+					
+					return true;
+				}
+			}
+			
+			// Attempt to Change Name.
+			try
+			{
+				api.changeDisplayName((Player) sender, saArgs[0]);
+				
+				return true;
+			}
+			catch (NonUniqueNickException e)
+			{
+				api.sendMessage(DNCStrings.ERROR_NON_UNIQUE, sender, null,
+						MessageType.ERROR);
+				
+				return true;
+			}
+		
+		// Target = Other
+		case 2:
+			// Pull the target we are changing.
+			Player[] players = api.checkName(saArgs[0]);
+			
+			if (players.length == 0)
+			{
+				api.sendMessage(DNCStrings.ERROR_BAD_USER, sender, null,
+						MessageType.ERROR);
+				
+				return true;
+			}
+			// Target Match Found
+			else if (players.length == 1)
+			{
+				if (saArgs[1].contains(" "))
+				{
+					if (!api.canUseChangeNameSpace(sender))
 					{
-						changeDisplayName(changer, changer.getName());
-						
-						return true;
-					}
-					else
-					{
-						changer.sendMessage(ChatColor.RED + plugin.dnc_short
-								+ locale.getString(DNCStrings.PERMISSION_USE));
+						api.sendMessage(DNCStrings.PERMISSION_SPACES, sender,
+								null, MessageType.ERROR);
 						
 						return true;
 					}
 				}
+				
+				try
+				{
+					api.changeDisplayName((Player) sender, players[0],
+							saArgs[1]);
+					
+					return true;
+				}
+				catch (NonUniqueNickException e)
+				{
+					api.sendMessage(DNCStrings.ERROR_NON_UNIQUE, sender,
+							null, MessageType.ERROR);
+					
+					return true;
+				}
+			}
+			else if (players.length > 1)
+			{
+				api.sendMessage(DNCStrings.ERROR_MULTI_MATCH, sender, null,
+						MessageType.ERROR);
+				
+				return true;
+			}
+			
+			break;
+		
+		// Default Case: Should never occur.
+		default:
+			log.severe("API.parseArguments(String[]) returned more than 2 arguments!"
+					+ " Inform the Author of this error!");
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * Resets a targets name to their login name.
+	 * 
+	 * @param sender
+	 *            the entity that executed the command.
+	 * 
+	 * @param args
+	 *            the args given with the command.
+	 * 
+	 * @return True if a valid command was given.
+	 */
+	public boolean reset(CommandSender sender, String[] args)
+	{
+		String[] saArgs = api.parseArguments(args);
+		
+		// Reset = Self
+		if (saArgs.length == 0)
+		{
+			if (api.isConsole(sender))
+			{
+				api.sendMessage(DNCStrings.ERROR_CONSOLE_RENAME, sender, null,
+						MessageType.ERROR);
+				
+				return true;
 			}
 			else
 			{
-				if (canUseChangeName(changer)
-						&& canUseChangeNameOther(changer))
+				Player p = (Player) sender;
+				
+				try
 				{
-					String[] saArgs = plugin.parseArguments(args);
+					api.changeDisplayName(p, p.getName());
 					
-					if (saArgs == null)
-					{
-						if (changer != null)
-						{
-							changer.sendMessage(ChatColor.RED
-									+ plugin.dnc_short
-									+ locale.getString(DNCStrings.ERROR_BAD_USER));
-						}
-						else
-						{
-							sender.sendMessage(plugin.dnc_short
-									+ locale.getString(DNCStrings.ERROR_BAD_USER));
-						}
-						
-						return false;
-					}
-					if (saArgs.length > 1)
-					{
-						if (changer != null)
-						{
-							changer.sendMessage(ChatColor.RED
-									+ plugin.dnc_short
-									+ locale.getString(DNCStrings.ERROR_BAD_ARGS));
-						}
-						else
-						{
-							sender.sendMessage(plugin.dnc_short
-									+ locale.getString(DNCStrings.ERROR_BAD_ARGS));
-						}
-						
-						return false;
-					}
-					else if (saArgs.length == 1)
-					{
-						Player[] players = plugin.checkName(saArgs[0]);
-						
-						if (players == null)
-						{
-							sender.sendMessage(ChatColor.RED
-									+ plugin.dnc_short
-									+ locale.getString(DNCStrings.ERROR_BAD_ARGS));
-							
-							return true;
-						}
-						
-						if (players.length > 1)
-						{
-							if (changer != null)
-							{
-								changer.sendMessage(ChatColor.RED
-										+ plugin.dnc_short
-										+ locale.getString(DNCStrings.ERROR_MULTI_MATCH));
-							}
-							else
-							{
-								sender.sendMessage(plugin.dnc_short
-										+ locale.getString(DNCStrings.ERROR_MULTI_MATCH));
-							}
-							
-							return true;
-						}
-						else
-						{
-							changeDisplayName(changer, players[0], saArgs[0],
-									players[0].getName());
-							
-							return true;
-						}
-					}
+					return true;
 				}
-				else
+				catch (NonUniqueNickException e)
 				{
-					changer.sendMessage(ChatColor.RED + plugin.dnc_short
-							+ locale.getString(DNCStrings.PERMISSION_OTHER));
+					log.severe("There was an error reverting from the DisplayName: Display - "
+							+ p.getDisplayName()
+							+ " | BadNick: "
+							+ e.getBadName());
 					
 					return true;
 				}
 			}
 		}
-		// Check name command.
-		else if (cmd.getName().equalsIgnoreCase(DNCCommands.CHECK.getName()))
+		// Reset = Other
+		else if (saArgs.length == 1)
 		{
-			if (canUseCheckName(changer))
+			if (!api.canUseChangeNameOther(sender))
 			{
-				String[] saArgs = plugin.parseArguments(args);
-				
-				if (saArgs == null)
-				{
-					return false;
-				}
-				if (saArgs.length == 1)
-				{
-					Player[] players = plugin.checkName(saArgs[0]);
-					
-					if (players == null)
-					{
-						sender.sendMessage(ChatColor.RED + plugin.dnc_short
-								+ locale.getString(DNCStrings.ERROR_BAD_USER));
-						
-						return true;
-					}
-					else if (players.length == 1)
-					{
-						String sName = players[0].getName();
-						
-						String sDisplay = players[0].getDisplayName();
-						
-						sDisplay = plugin.stripPrefix(sDisplay);
-						
-						sDisplay = ChatColor.stripColor(sDisplay);
-						
-						Object[] users = new Object[2];
-						
-						formatter.applyPattern(locale
-								.getString(DNCStrings.INFO_CHECK_SINGLE));
-						
-						StringBuilder sb = new StringBuilder();
-						
-						if (changer != null)
-						{
-							sb.append(ChatColor.GREEN);
-						}
-						
-						sb.append(plugin.dnc_short);
-						
-						if (sDisplay.equals(saArgs[0]))
-						{
-							users[0] = (players[0].getDisplayName() + ChatColor.GREEN);
-							
-							users[1] = sName;
-						}
-						else
-						{
-							users[0] = sName;
-							
-							users[1] = (players[0].getDisplayName() + ChatColor.GREEN);
-						}
-						
-						sb.append(formatter.format(users));
-						
-						if (changer != null)
-						{
-							changer.sendMessage(sb.toString());
-						}
-						else
-						{
-							sender.sendMessage(sb.toString());
-						}
-						
-						return true;
-					}
-					else
-					{
-						if (changer != null)
-						{
-							changer.sendMessage(ChatColor.GREEN
-									+ plugin.dnc_short
-									+ locale.getString(DNCStrings.INFO_CHECK_MULTI));
-						}
-						else
-						{
-							sender.sendMessage(plugin.dnc_short
-									+ locale.getString(DNCStrings.INFO_CHECK_MULTI));
-						}
-						
-						Object[] users = new Object[2];
-						
-						formatter.applyPattern(locale
-								.getString(DNCStrings.INFO_CHECK_MULTI_LIST));
-						
-						StringBuilder sb = new StringBuilder();
-						
-						if (changer != null)
-						{
-							sb.append(ChatColor.GREEN);
-						}
-						
-						sb.append(plugin.dnc_short);
-						
-						users[0] = saArgs[0];
-						
-						String sUsers = "";
-						
-						for (Player p : players)
-						{
-							sUsers += p.getName() + ", ";
-						}
-						
-						sUsers = sUsers.substring(0, sUsers.lastIndexOf(','));
-						
-						users[1] = sUsers;
-						
-						sb.append(formatter.format(users));
-						
-						if (changer != null)
-						{
-							changer.sendMessage(sb.toString());
-						}
-						else
-						{
-							sender.sendMessage(sb.toString());
-						}
-					}
-				}
-				else
-				{
-					if (changer != null)
-					{
-						changer.sendMessage(ChatColor.RED + plugin.dnc_short
-								+ locale.getString(DNCStrings.ERROR_BAD_ARGS));
-					}
-					else
-					{
-						sender.sendMessage(plugin.dnc_short
-								+ locale.getString(DNCStrings.ERROR_BAD_ARGS));
-					}
-					
-					return false;
-				}
-				
-			}
-			else
-			{
-				changer.sendMessage(ChatColor.RED + plugin.dnc_short
-						+ locale.getString(DNCStrings.PERMISSION_CHECK));
-			}
-			
-			return true;
-		}
-		// List Names command
-		else if (cmd.getName().equalsIgnoreCase(DNCCommands.LIST.getName()))
-		{
-			StringBuilder sb;
-			
-			if (canUseList(changer))
-			{
-				formatter.applyPattern(locale
-						.getString(DNCStrings.INFO_CHECK_SINGLE));
-				
-				Object[] oNames = new Object[2];
-				
-				for (Player p : Bukkit.getOnlinePlayers())
-				{
-					sb = new StringBuilder();
-					
-					if (changer != null)
-					{
-						sb.append(ChatColor.GREEN);
-					}
-					
-					sb.append(plugin.dnc_short);
-					
-					oNames[0] = p.getName();
-					
-					oNames[1] = p.getDisplayName();
-					
-					if (oNames[0].equals(oNames[1]))
-					{
-						continue;
-					}
-					
-					sb.append(formatter.format(oNames));
-					
-					if (changer != null)
-					{
-						changer.sendMessage(sb.toString());
-					}
-					else
-					{
-						sender.sendMessage(sb.toString());
-					}
-				}
+				api.sendMessage(DNCStrings.PERMISSION_OTHER, sender, null,
+						MessageType.ERROR);
 				
 				return true;
 			}
-			else
+			
+			Player[] players = api.checkName(saArgs[0]);
+			
+			switch (players.length)
 			{
-				sb = new StringBuilder();
+			// No User Matched
+			case 0:
+				api.sendMessage(DNCStrings.ERROR_BAD_USER, sender, null,
+						MessageType.ERROR);
 				
-				sb.append(ChatColor.RED).append(plugin.dnc_short)
-						.append(locale.getString(DNCStrings.PERMISSION_LIST));
+				return true;
+				// One User Matched
+			case 1:
+				Player p = (Player) sender;
 				
-				changer.sendMessage(sb.toString());
-				
+				try
+				{
+					api.changeDisplayName(p, players[0], players[0].getName());
+					
+					return true;
+				}
+				catch (NonUniqueNickException e)
+				{
+					log.severe("There was an error reverting from the DisplayName: Display - "
+							+ p.getDisplayName()
+							+ " | BadNick: "
+							+ e.getBadName());
+					
+					return true;
+				}
+				// To Many Users Match
+			default:
+				api.sendMessage(DNCStrings.ERROR_MULTI_MATCH, sender, null,
+						MessageType.ERROR);
 				return true;
 			}
 		}
-		
+		else if (saArgs.length > 1)
+		{
+			api.sendMessage(DNCStrings.ERROR_BAD_ARGS, sender, null,
+					MessageType.ERROR);
+			
+			return false;
+		}
 		return false;
 	}
 	
 	/**
-	 * Changes the display name of the target.
+	 * Gets the maximum number of pages based upon number of entries.
 	 * 
-	 * @param target
-	 *            the player to change.
+	 * @param size
+	 *            number of entries total.
 	 * 
-	 * @param newName
-	 *            the new name to use.
+	 * @return the max number of pages.
 	 */
-	private void changeDisplayName(Player target, String newName)
+	private int getMaxPages(int size)
 	{
-		changeDisplayName(null, target, null, newName);
-	}
-	
-	/**
-	 * Changes the display name of the target and sends notifications.
-	 * 
-	 * @param caller
-	 *            The person trying to make the change.
-	 * 
-	 * @param target
-	 *            The intended target of the change.
-	 * 
-	 * @param oldName
-	 *            The old name of the target.
-	 * 
-	 * @param newName
-	 *            The new name to use.
-	 */
-	private void changeDisplayName(Player caller, Player target,
-			String oldName, String newName)
-	{
-		Object[] users = new Object[2];
+		int iReturn = size % MAX_PLAYERS_PER_PAGE;
 		
-		if (oldName == null)
+		if (iReturn == 0)
 		{
-			users[0] = (target.getDisplayName() + ChatColor.GREEN);
+			return size / MAX_PLAYERS_PER_PAGE;
 		}
 		else
 		{
-			users[0] = (oldName + ChatColor.GREEN);
+			return (size / MAX_PLAYERS_PER_PAGE) + 1;
 		}
-		
-		String spoutName = newName;
-		
-		// Parse Color Codes.
-		spoutName = plugin.parseColors(spoutName);
-		
-		// Attach the prefix if needed.
-		if (!target.getName().equals(newName))
-		{
-			spoutName = plugin.prefixNick(spoutName);
-		}
-		
-		users[1] = (spoutName + ChatColor.GREEN);
-		
-		// Set the DisplayName
-		target.setDisplayName(spoutName);
-		
-		if (plugin.useScoreboard())
-		{
-			String sListName;
-			
-			if (spoutName.length() > 16)
-			{
-				sListName = spoutName.substring(0, 16);
-				
-				if (sListName.endsWith(String.valueOf(ChatColor.COLOR_CHAR)))
-				{
-					sListName = sListName.substring(0, 15);
-				}
-			}
-			else
-			{
-				sListName = spoutName;
-			}
-			
-			target.setPlayerListName(sListName);
-		}
-		
-		formatter.applyPattern(locale.getString(DNCStrings.INFO_NICK_TARGET));
-		
-		StringBuilder sbTarget = new StringBuilder();
-		
-		StringBuilder sbCaller;
-		
-		sbTarget.append(ChatColor.GREEN).append(plugin.dnc_short)
-				.append(formatter.format(users));
-		
-		target.sendMessage(sbTarget.toString());
-		
-		if (caller != null && !caller.equals(target))
-		{
-			sbCaller = new StringBuilder();
-			
-			formatter.applyPattern(locale
-					.getString(DNCStrings.INFO_NICK_CALLER));
-			
-			sbCaller.append(ChatColor.GREEN).append(plugin.dnc_short)
-					.append(formatter.format(users));
-			
-			caller.sendMessage(sbCaller.toString());
-		}
-		
-		if (plugin.isSpoutEnabled() == true)
-		{
-			SpoutPlayer spoutTarget = (SpoutPlayer) target;
-			
-			if (spoutTarget.isSpoutCraftEnabled())
-			{
-				spoutTarget.sendNotification(
-						locale.getString(DNCStrings.INFO_SPOUT_TARGET),
-						spoutName, Material.DIAMOND);
-			}
-			
-			if (caller != null && !caller.equals(target))
-			{
-				SpoutPlayer spoutCaller = (SpoutPlayer) caller;
-				
-				if (spoutCaller.isSpoutCraftEnabled())
-				{
-					formatter.applyPattern(locale
-							.getString(DNCStrings.INFO_SPOUT_CALLER));
-					
-					spoutCaller.sendNotification(formatter.format(users),
-							spoutName, Material.DIAMOND);
-				}
-			}
-			
-			spoutTarget.setTitle(spoutName);
-		}
-		
-		if (plugin.useGlobalAnnounce())
-		{
-			Player[] exclude;
-			
-			if (caller != null)
-			{
-				exclude = new Player[2];
-				
-				exclude[0] = caller;
-				
-				exclude[1] = target;
-			}
-			else
-			{
-				exclude = new Player[1];
-				
-				exclude[0] = target;
-			}
-			
-			Player[] targets = getAnnounceTargets(exclude);
-			
-			if (targets.length > 0)
-			{
-				sbCaller = new StringBuilder();
-				
-				formatter.applyPattern(locale
-						.getString(DNCStrings.INFO_NICK_CALLER));
-				
-				sbCaller.append(ChatColor.GREEN).append(plugin.dnc_short)
-						.append(formatter.format(users));
-				
-				for (Player p : targets)
-				{
-					if (plugin.isBroadcastAll())
-					{
-						p.sendMessage(sbCaller.toString());
-					}
-					else
-					{
-						if (canBroadcast(p))
-						{
-							p.sendMessage(sbCaller.toString());
-						}
-					}
-				}
-			}
-		}
-		
-		plugin.storeNick(target);
 	}
 	
 	/**
-	 * Checks for illegal characters in the name (characters being used
-	 * without permission).
+	 * Gets the player index to start from in the array.
 	 * 
-	 * @param target
-	 *            Player who called the name change.
+	 * @param pageNumber
+	 *            the page number requested.
 	 * 
-	 * @param name
-	 *            the name to check.
+	 * @param maxPages
+	 *            the max number of pages.
 	 * 
-	 * @return true if illegal characters detected. False otherwise.
+	 * @return the array index to start listing users from.
 	 */
-	private boolean checkForIllegalColors(Player target, String name)
+	private int getMinPlayerIndex(int pageNumber, int maxPages)
 	{
-		String sName = plugin.parseColors(name);
+		int iIndex;
 		
-		if (sName.contains(ChatColor.BOLD.toString()))
+		if (pageNumber > maxPages)
 		{
-			if (!canUseBoldColor(target))
-			{
-				target.sendMessage(ChatColor.RED + plugin.dnc_short
-						+ locale.getString(DNCStrings.PERMISSION_COLOR_BOLD));
-				
-				return true;
-			}
-			
-		}
-		
-		if (sName.contains(ChatColor.ITALIC.toString()))
-		{
-			if (!canUseItalicColor(target))
-			{
-				target.sendMessage(ChatColor.RED + plugin.dnc_short
-						+ locale.getString(DNCStrings.PERMISSION_COLOR_ITALIC));
-				
-				return true;
-			}
-		}
-		
-		if (sName.contains(ChatColor.MAGIC.toString()))
-		{
-			if (!canUseMagicColor(target))
-			{
-				target.sendMessage(ChatColor.RED + plugin.dnc_short
-						+ locale.getString(DNCStrings.PERMISSION_COLOR_MAGIC));
-				
-				return true;
-			}
-		}
-		
-		if (sName.contains(ChatColor.STRIKETHROUGH.toString()))
-		{
-			if (!canUseStrikethroughColor(target))
-			{
-				target.sendMessage(ChatColor.RED
-						+ plugin.dnc_short
-						+ locale.getString(DNCStrings.PERMISSION_COLOR_STRIKETHROUGH));
-				
-				return true;
-			}
-		}
-		
-		if (sName.contains(ChatColor.UNDERLINE.toString()))
-		{
-			if (!canUseUnderlineColor(target))
-			{
-				target.sendMessage(ChatColor.RED
-						+ plugin.dnc_short
-						+ locale.getString(DNCStrings.PERMISSION_COLOR_UNDERLINE));
-				
-				return true;
-			}
-		}
-		
-		return false;
-	}
-	
-	/**
-	 * Takes an array of players to match against, and returns all players
-	 * not in the given array.
-	 * 
-	 * @param exclude
-	 *            Array of players to exclude from resulting array.
-	 * 
-	 * @return An array of players that excludes the given array, or null
-	 *         if no players found other than those in the array.
-	 */
-	private Player[] getAnnounceTargets(Player[] exclude)
-	{
-		if (exclude == null || exclude.length == 0)
-		{
-			throw new IllegalArgumentException(
-					"Exclude can not be null or of length 0.");
-		}
-		
-		ArrayList<Player> targets = new ArrayList<Player>();
-		
-		Player[] onlinePlayers = plugin.getServer().getOnlinePlayers();
-		
-		boolean bFound = false;
-		
-		for (Player online : onlinePlayers)
-		{
-			
-			for (Player excluded : exclude)
-			{
-				if (excluded.getName().equals(online.getName()))
-				{
-					bFound = true;
-					
-					break;
-				}
-			}
-			
-			if (!bFound)
-			{
-				targets.add(online);
-				
-				bFound = false;
-			}
-		}
-		
-		targets.trimToSize();
-		
-		if (targets.size() > 0)
-		{
-			Player[] result = new Player[targets.size()];
-			
-			targets.toArray(result);
-			
-			return result;
+			iIndex = maxPages;
 		}
 		else
 		{
-			return new Player[0];
+			iIndex = pageNumber;
 		}
+		
+		return ((iIndex - 1) * MAX_PLAYERS_PER_PAGE);
 	}
-	
+
 	/**
-	 * Ensure that a name is unique to the current player list. This
-	 * includes color codes & the prefix if enabled.
+	 * Returns an array of Players currently on the server ordered by login name.
 	 * 
-	 * @param name
-	 *            The name to check for uniqueness.
-	 * 
-	 * @return true if unique, false otherwise.
+	 * @return an array of players.
 	 */
-	private boolean checkUnique(String name)
+	private Player[] getPlayerList()
 	{
-		Player[] players = plugin.getServer().getOnlinePlayers();
+		ArrayList<Player> alPlayers = new ArrayList<Player>();
 		
-		String sDisplayName = plugin.parseColors(name);
+		Player[] aPlayers;
 		
-		sDisplayName = plugin.prefixNick(sDisplayName);
-		
-		for (Player p : players)
+		Set<Entry<String, Player>> set = plugin.getOrderedPlayers().entrySet();
+				
+		Iterator<Entry<String, Player>> i = set.iterator();
+				
+		while (i.hasNext())
 		{
-			if (sDisplayName.equals(p.getDisplayName()))
+			Map.Entry<String, Player> me = i.next();
+			
+			if(!me.getValue().getName().equals(me.getValue().getDisplayName()))
 			{
-				return false;
+				alPlayers.add(me.getValue());
 			}
 		}
 		
-		return true;
+		alPlayers.trimToSize();
+				
+		aPlayers = new Player[alPlayers.size()];
+				
+		alPlayers.toArray(aPlayers);
+		
+		return aPlayers;
 	}
 }
