@@ -3,12 +3,21 @@ package me.captain.dnc;
 import java.util.HashMap;
 import java.util.ResourceBundle;
 
+/**
+ * Loads localizations into memory stored by key from {@link DNCStrings}
+ * 
+ * @author Mark 'SniperFodder' Gunnett
+ * 
+ */
 public class DNCLocalization
 {
 	private final DispNameChanger plugin;
 	
 	private HashMap<DNCStrings, String> sStrings;
 	
+	/**
+	 * Default Constructor.
+	 */
 	public DNCLocalization()
 	{
 		plugin = DispNameChanger.getInstance();
@@ -17,7 +26,9 @@ public class DNCLocalization
 	}
 	
 	/**
-	 * Loads Translations from file.
+	 * Loads Translations from file. The file selected for translation is
+	 * set in the plugin.yml file, and is accessed through
+	 * {@link DispNameChanger#getLocale}.
 	 */
 	public void loadTranslations()
 	{
@@ -32,7 +43,7 @@ public class DNCLocalization
 	}
 	
 	/**
-	 * Retrieves the localized string for the given DNCStrings key.
+	 * Retrieves the localized string for the given {@link DNCStrings} key.
 	 * 
 	 * @param key
 	 *            The DNCStrings Enum for the string to pull.
@@ -45,7 +56,8 @@ public class DNCLocalization
 	}
 	
 	/**
-	 * Allows the program to adjust the localized string used.
+	 * Allows the program to adjust the localized string used. This method
+	 * is used by DispNameChanger for updating localization strings.
 	 * 
 	 * @param key
 	 *            the DNCStrings enum to change.
