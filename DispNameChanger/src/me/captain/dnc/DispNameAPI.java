@@ -14,6 +14,11 @@ import org.bukkit.command.RemoteConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.getspout.spoutapi.player.SpoutPlayer;
 
+/**
+ * Provides API Calls for DNC code and any related plugins.
+ * 
+ * @author Mark 'SniperFodder' Gunnett
+ */
 public class DispNameAPI
 {
 	private static DispNameAPI instance;
@@ -24,12 +29,29 @@ public class DispNameAPI
 	
 	private DNCLocalization locale;
 	
+	/**
+	 * Provides Color for various message types for the @link
+	 * {@link DispNameAPI#sendMessage(DNCStrings, CommandSender, Object[], MessageType)}
+	 * method.
+	 * 
+	 * @author Mark 'SniperFodder' Gunnett
+	 * 
+	 */
 	public enum MessageType
 	{
+		/**
+		 * An AQUA Color for information.
+		 */
 		INFO(ChatColor.AQUA),
 		
+		/**
+		 * A Red Color for Errors.
+		 */
 		ERROR(ChatColor.RED),
 		
+		/**
+		 * A GREEN color for confirmations.
+		 */
 		CONFIRMATION(ChatColor.GREEN);
 		
 		private ChatColor color;
@@ -39,6 +61,11 @@ public class DispNameAPI
 			color = c;
 		}
 		
+		/**
+		 * Get's the ChatColor associated with this MessageType.
+		 * 
+		 * @return ChatColor to use in coloring a message.
+		 */
 		public ChatColor getColor()
 		{
 			return color;
@@ -65,11 +92,11 @@ public class DispNameAPI
 	}
 	
 	/**
-	 * Checks to see if the given player has the 'dispname.announce'
+	 * Checks to see if the given Sender has the 'dispname.announce'
 	 * permission for nick broadcasts.
 	 * 
-	 * @param p
-	 *            the player to check.
+	 * @param s
+	 *            the Sender to check.
 	 * 
 	 * @return true if they have it, false otherwise.
 	 */
@@ -84,10 +111,10 @@ public class DispNameAPI
 	}
 	
 	/**
-	 * Checks to see if the Player can use the command.
+	 * Checks to see if the Sender can use the command.
 	 * 
-	 * @param p
-	 *            The player to check the permission for.
+	 * @param s
+	 *            The Sender to check the permission for.
 	 * 
 	 * @return true if the player can use the command, false otherwise.
 	 */
@@ -102,10 +129,10 @@ public class DispNameAPI
 	}
 	
 	/**
-	 * Checks to see if the Player can use the command.
+	 * Checks to see if the Sender can use the command.
 	 * 
-	 * @param p
-	 *            The player to check the permission for.
+	 * @param s
+	 *            The Sender to check the permission for.
 	 * 
 	 * @return true if the player can use the command, false otherwise.
 	 */
@@ -120,10 +147,10 @@ public class DispNameAPI
 	}
 	
 	/**
-	 * Checks to see if the Player can use the command.
+	 * Checks to see if the Sender can use the command.
 	 * 
-	 * @param p
-	 *            The player to check the permission for.
+	 * @param s
+	 *            The Sender to check the permission for.
 	 * 
 	 * @return true if the player can use the command, false otherwise.
 	 */
@@ -138,10 +165,10 @@ public class DispNameAPI
 	}
 	
 	/**
-	 * Checks to see if the Player can use the command.
+	 * Checks to see if the Sender can use the command.
 	 * 
-	 * @param p
-	 *            The player to check the permission for.
+	 * @param s
+	 *            The Sender to check the permission for.
 	 * 
 	 * @return true if the player can use the command, false otherwise.
 	 */
@@ -155,6 +182,14 @@ public class DispNameAPI
 		return s.hasPermission("dispname.check");
 	}
 	
+	/**
+	 * Checks to see if the Sender can use the color.
+	 * 
+	 * @param s
+	 *            The Sender to check the permission for.
+	 * 
+	 * @return true if the player can use the command, false otherwise.
+	 */
 	public boolean canUseColorAqua(CommandSender s)
 	{
 		if (s == null)
@@ -165,6 +200,14 @@ public class DispNameAPI
 		return s.hasPermission("dispname.color.aqua");
 	}
 	
+	/**
+	 * Checks to see if the Sender can use the color.
+	 * 
+	 * @param s
+	 *            The Sender to check the permission for.
+	 * 
+	 * @return true if the player can use the command, false otherwise.
+	 */
 	public boolean canUseColorBlack(CommandSender s)
 	{
 		if (s == null)
@@ -175,6 +218,14 @@ public class DispNameAPI
 		return s.hasPermission("dispname.color.black");
 	}
 	
+	/**
+	 * Checks to see if the Sender can use the color.
+	 * 
+	 * @param s
+	 *            The Sender to check the permission for.
+	 * 
+	 * @return true if the player can use the command, false otherwise.
+	 */
 	public boolean canUseColorBrightGreen(CommandSender s)
 	{
 		if (s == null)
@@ -185,6 +236,14 @@ public class DispNameAPI
 		return s.hasPermission("dispname.color.brightgreen");
 	}
 	
+	/**
+	 * Checks to see if the Sender can use the color.
+	 * 
+	 * @param s
+	 *            The Sender to check the permission for.
+	 * 
+	 * @return true if the player can use the command, false otherwise.
+	 */
 	public boolean canUseColorDarkAqua(CommandSender s)
 	{
 		if (s == null)
@@ -195,6 +254,14 @@ public class DispNameAPI
 		return s.hasPermission("dispname.color.darkaqua");
 	}
 	
+	/**
+	 * Checks to see if the Sender can use the color.
+	 * 
+	 * @param s
+	 *            The Sender to check the permission for.
+	 * 
+	 * @return true if the player can use the command, false otherwise.
+	 */
 	public boolean canUseColorDarkBlue(CommandSender s)
 	{
 		if (s == null)
@@ -205,6 +272,14 @@ public class DispNameAPI
 		return s.hasPermission("dispname.color.darkblue");
 	}
 	
+	/**
+	 * Checks to see if the Sender can use the color.
+	 * 
+	 * @param s
+	 *            The Sender to check the permission for.
+	 * 
+	 * @return true if the player can use the command, false otherwise.
+	 */
 	public boolean canUseColorDarkGreen(CommandSender s)
 	{
 		if (s == null)
@@ -225,6 +300,14 @@ public class DispNameAPI
 		return s.hasPermission("dispname.color.darkgrey");
 	}
 	
+	/**
+	 * Checks to see if the Sender can use the color.
+	 * 
+	 * @param s
+	 *            The Sender to check the permission for.
+	 * 
+	 * @return true if the player can use the command, false otherwise.
+	 */
 	public boolean canUseColorDarkRed(CommandSender s)
 	{
 		if (s == null)
@@ -235,6 +318,14 @@ public class DispNameAPI
 		return s.hasPermission("dispname.color.darkred");
 	}
 	
+	/**
+	 * Checks to see if the Sender can use the color.
+	 * 
+	 * @param s
+	 *            The Sender to check the permission for.
+	 * 
+	 * @return true if the player can use the command, false otherwise.
+	 */
 	public boolean canUseColorGrey(CommandSender s)
 	{
 		if (s == null)
@@ -245,6 +336,14 @@ public class DispNameAPI
 		return s.hasPermission("dispname.color.grey");
 	}
 	
+	/**
+	 * Checks to see if the Sender can use the color.
+	 * 
+	 * @param s
+	 *            The Sender to check the permission for.
+	 * 
+	 * @return true if the player can use the command, false otherwise.
+	 */
 	public boolean canUseColorIndigo(CommandSender s)
 	{
 		if (s == null)
@@ -255,6 +354,14 @@ public class DispNameAPI
 		return s.hasPermission("dispname.color.indigo");
 	}
 	
+	/**
+	 * Checks to see if the Sender can use the color.
+	 * 
+	 * @param s
+	 *            The Sender to check the permission for.
+	 * 
+	 * @return true if the player can use the command, false otherwise.
+	 */
 	public boolean canUseColorOrange(CommandSender s)
 	{
 		if (s == null)
@@ -265,6 +372,14 @@ public class DispNameAPI
 		return s.hasPermission("dispname.color.orange");
 	}
 	
+	/**
+	 * Checks to see if the Sender can use the color.
+	 * 
+	 * @param s
+	 *            The Sender to check the permission for.
+	 * 
+	 * @return true if the player can use the command, false otherwise.
+	 */
 	public boolean canUseColorPink(CommandSender s)
 	{
 		if (s == null)
@@ -275,6 +390,14 @@ public class DispNameAPI
 		return s.hasPermission("dispname.color.pink");
 	}
 	
+	/**
+	 * Checks to see if the Sender can use the color.
+	 * 
+	 * @param s
+	 *            The Sender to check the permission for.
+	 * 
+	 * @return true if the player can use the command, false otherwise.
+	 */
 	public boolean canUseColorPurple(CommandSender s)
 	{
 		if (s == null)
@@ -285,6 +408,14 @@ public class DispNameAPI
 		return s.hasPermission("dispname.color.purple");
 	}
 	
+	/**
+	 * Checks to see if the Sender can use the color.
+	 * 
+	 * @param s
+	 *            The Sender to check the permission for.
+	 * 
+	 * @return true if the player can use the command, false otherwise.
+	 */
 	public boolean canUseColorRed(CommandSender s)
 	{
 		if (s == null)
@@ -295,6 +426,14 @@ public class DispNameAPI
 		return s.hasPermission("dispname.color.red");
 	}
 	
+	/**
+	 * Checks to see if the Sender can use the color.
+	 * 
+	 * @param s
+	 *            The Sender to check the permission for.
+	 * 
+	 * @return true if the player can use the command, false otherwise.
+	 */
 	public boolean canUseColorWhite(CommandSender s)
 	{
 		if (s == null)
@@ -305,6 +444,14 @@ public class DispNameAPI
 		return s.hasPermission("dispname.color.white");
 	}
 	
+	/**
+	 * Checks to see if the Sender can use the color.
+	 * 
+	 * @param s
+	 *            The Sender to check the permission for.
+	 * 
+	 * @return true if the player can use the command, false otherwise.
+	 */
 	public boolean canUseColorYellow(CommandSender s)
 	{
 		if (s == null)
@@ -316,9 +463,9 @@ public class DispNameAPI
 	}
 	
 	/**
-	 * Checks to see if the player can use the list command.
+	 * Checks to see if the Sender can use the list command.
 	 * 
-	 * @param p
+	 * @param s
 	 *            the player to check the permission for.
 	 * 
 	 * @return true if the player can use the command, false otherwise.
@@ -334,11 +481,11 @@ public class DispNameAPI
 	}
 	
 	/**
-	 * Checks to see if the given player has the 'dispname.color.bold'
+	 * Checks to see if the given Sender has the 'dispname.color.bold'
 	 * permission for color code usage.
 	 * 
-	 * @param p
-	 *            the player to check.
+	 * @param s
+	 *            the sender to check.
 	 * 
 	 * @return true if they have it, false otherwise.
 	 */
@@ -353,11 +500,11 @@ public class DispNameAPI
 	}
 	
 	/**
-	 * Checks to see if the given player has the
+	 * Checks to see if the given Sender has the
 	 * 'dispname.color.style.italic' permission for color code usage.
 	 * 
 	 * @param p
-	 *            the player to check.
+	 *            the Sender to check.
 	 * 
 	 * @return true if they have it, false otherwise.
 	 */
@@ -372,11 +519,11 @@ public class DispNameAPI
 	}
 	
 	/**
-	 * Checks to see if the given player has the 'dispname.color.magic'
+	 * Checks to see if the given Sender has the 'dispname.color.style.magic'
 	 * permission for color code usage.
 	 * 
 	 * @param p
-	 *            the player to check.
+	 *            the Sender to check.
 	 * 
 	 * @return true if they have it, false otherwise.
 	 */
@@ -391,11 +538,11 @@ public class DispNameAPI
 	}
 	
 	/**
-	 * Checks to see if the given player has the 'dispname.color.strike'
+	 * Checks to see if the given Sender has the 'dispname.color.style.strike'
 	 * permission for color code usage.
 	 * 
 	 * @param p
-	 *            the player to check.
+	 *            the Sender to check.
 	 * 
 	 * @return true if they have it, false otherwise.
 	 */
@@ -410,11 +557,11 @@ public class DispNameAPI
 	}
 	
 	/**
-	 * Checks to see if the given player has the 'dispname.color.underline'
+	 * Checks to see if the given Sender has the 'dispname.color.style.underline'
 	 * permission for color code usage.
 	 * 
 	 * @param p
-	 *            the player to check.
+	 *            the Sender to check.
 	 * 
 	 * @return true if they have it, false otherwise.
 	 */
@@ -837,9 +984,11 @@ public class DispNameAPI
 	/**
 	 * Checks for color codes used in a string.
 	 * 
-	 * @param input The string to check
+	 * @param input
+	 *            The string to check
 	 * 
-	 * @return an array of color codes found. Only returns one of each color code.
+	 * @return an array of color codes found. Only returns one of each
+	 *         color code.
 	 */
 	public ChatColor[] getColorsUsed(String input)
 	{
@@ -1063,8 +1212,8 @@ public class DispNameAPI
 	 * @param args
 	 *            the arguments string from the command.
 	 * 
-	 * @return A String array containing the arguments <code>target</code> and/or
-	 *         <code>name</code> in that order.
+	 * @return A String array containing the arguments <code>target</code>
+	 *         and/or <code>name</code> in that order.
 	 */
 	public String[] parseArguments(String[] args)
 	{

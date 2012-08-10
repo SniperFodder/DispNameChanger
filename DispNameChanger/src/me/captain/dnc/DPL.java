@@ -22,7 +22,9 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.getspout.spoutapi.player.SpoutPlayer;
 
 /**
- * Contains functions for ensuring the player is named properly.
+ * Contains functions for ensuring the player is named properly, as well as
+ * changing kick/death messages. Command PreProcessing is also done here;
+ * This is where display names are replaced in command strings.
  * 
  * @author captainawesome7, itsatacoshop247, Daxiongmao87, Luke Zwekii,
  *         Sammy, SniperFodder
@@ -420,6 +422,11 @@ public class DPL implements Listener
 		return -1;
 	}
 	
+	/**
+	 * Remove a player that was in the ordered list.
+	 * 
+	 * @param p the player to remove.
+	 */
 	private void removeOrderedPlayer(Player p)
 	{
 		if(plugin.getOrderedPlayers().containsKey(p.getName()))
@@ -428,6 +435,11 @@ public class DPL implements Listener
 		}
 	}
 
+	/**
+	 * Saves a players name on save if Saving on quit is enabled.
+	 * 
+	 * @param player
+	 */
 	private void savePlayer(Player player)
 	{
 		if(plugin.isSaveOnQuit())

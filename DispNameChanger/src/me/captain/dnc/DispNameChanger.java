@@ -210,12 +210,10 @@ public class DispNameChanger extends JavaPlugin
 		return bSaveOnRename;
 	}
 	
-	@SuppressWarnings(
-	{ "unchecked", "rawtypes" })
 	@Override
 	public List<Class<?>> getDatabaseClasses()
 	{
-		List list = new ArrayList();
+		List<Class<?>> list = new ArrayList<Class<?>>();
 		
 		list.add(DP.class);
 		

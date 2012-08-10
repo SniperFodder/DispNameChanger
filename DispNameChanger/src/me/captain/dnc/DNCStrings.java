@@ -1,5 +1,12 @@
 package me.captain.dnc;
 
+/**
+ * An Enumeration of Strings that the plugin uses that are visible to the
+ * user. Some Enumerations have arguments listed in JD header.
+ * 
+ * @author Mark 'SniperFodder' Gunnett
+ * 
+ */
 public enum DNCStrings
 {
 	/*
@@ -49,7 +56,8 @@ public enum DNCStrings
 	INFO_CHECK_MULTI_LIST,
 	
 	/**
-	 * {0} is really {1}.<br><br>
+	 * {0} is really {1}.<br>
+	 * <br>
 	 * 
 	 * Argument {0}: Queried name<br>
 	 * Argument {1}: Actual name<br>
@@ -88,7 +96,8 @@ public enum DNCStrings
 	INFO_LIST,
 	
 	/**
-	 * List of users - Page[{0}/{1}]<br><br>
+	 * List of users - Page[{0}/{1}]<br>
+	 * <br>
 	 * 
 	 * Argument {0}: Current page<br>
 	 * Argument {1}: Max pages<br>
@@ -99,7 +108,7 @@ public enum DNCStrings
 	 * Statement to caller about name change.
 	 */
 	INFO_NICK_CALLER,
-	 
+	
 	/**
 	 * Name was reset because non-unique.
 	 */
@@ -149,8 +158,8 @@ public enum DNCStrings
 	 * Spout Achievement message for caller about new name.
 	 */
 	INFO_SPOUT_CALLER,
-	 
-	 /**
+	
+	/**
 	 * Spout Achievement message for target about new name.
 	 */
 	INFO_SPOUT_TARGET,
@@ -197,7 +206,13 @@ public enum DNCStrings
 	 */
 	PERMISSION_USE;
 	
+	/**
+	 * Long version of the Plugin Name. <code>[DispNameChanger]</code>
+	 */
 	public static final String dnc_long = "[DispNameChanger] ";
 	
+	/**
+	 * Short version of the plugin name. <code>[DNC]</code>
+	 */
 	public static final String dnc_short = "[DNC] ";
 }

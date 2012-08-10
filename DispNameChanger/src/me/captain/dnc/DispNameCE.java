@@ -29,9 +29,12 @@ import org.bukkit.entity.Player;
  */
 public class DispNameCE implements CommandExecutor
 {
-	public static final Logger log = Bukkit.getLogger();
-	
+	/**
+	 * The max players per page allowed for the pagination of DisplayList.
+	 */
 	public static final int MAX_PLAYERS_PER_PAGE = 7;
+	
+	private static final Logger log = Bukkit.getLogger();
 	
 	private DispNameChanger plugin;
 	
@@ -200,7 +203,7 @@ public class DispNameCE implements CommandExecutor
 				return false;
 			}
 			
-			if(iPageNumber <= 0)
+			if (iPageNumber <= 0)
 			{
 				iPageNumber = 1;
 			}
@@ -240,7 +243,7 @@ public class DispNameCE implements CommandExecutor
 		
 		for (int iLoop1 = iStartIndex; iLoop1 <= ((iStartIndex + MAX_PLAYERS_PER_PAGE) - 1); iLoop1++)
 		{
-			if(iLoop1 > (aPlayers.length - 1))
+			if (iLoop1 > (aPlayers.length - 1))
 			{
 				break;
 			}
@@ -368,8 +371,8 @@ public class DispNameCE implements CommandExecutor
 				
 				return true;
 			}
-		
-		// Target = Other
+			
+			// Target = Other
 		case 2:
 			// Pull the target we are changing.
 			Player[] players = api.checkName(saArgs[0]);
@@ -404,8 +407,8 @@ public class DispNameCE implements CommandExecutor
 				}
 				catch (NonUniqueNickException e)
 				{
-					api.sendMessage(DNCStrings.ERROR_NON_UNIQUE, sender,
-							null, MessageType.ERROR);
+					api.sendMessage(DNCStrings.ERROR_NON_UNIQUE, sender, null,
+							MessageType.ERROR);
 					
 					return true;
 				}
@@ -580,9 +583,10 @@ public class DispNameCE implements CommandExecutor
 		
 		return ((iIndex - 1) * MAX_PLAYERS_PER_PAGE);
 	}
-
+	
 	/**
-	 * Returns an array of Players currently on the server ordered by login name.
+	 * Returns an array of Players currently on the server ordered by login
+	 * name.
 	 * 
 	 * @return an array of players.
 	 */
@@ -593,23 +597,24 @@ public class DispNameCE implements CommandExecutor
 		Player[] aPlayers;
 		
 		Set<Entry<String, Player>> set = plugin.getOrderedPlayers().entrySet();
-				
+		
 		Iterator<Entry<String, Player>> i = set.iterator();
-				
+		
 		while (i.hasNext())
 		{
 			Map.Entry<String, Player> me = i.next();
 			
-			if(!me.getValue().getName().equals(me.getValue().getDisplayName()))
+			if (!me.getValue().getName()
+					.equals(me.getValue().getDisplayName()))
 			{
 				alPlayers.add(me.getValue());
 			}
 		}
 		
 		alPlayers.trimToSize();
-				
+		
 		aPlayers = new Player[alPlayers.size()];
-				
+		
 		alPlayers.toArray(aPlayers);
 		
 		return aPlayers;

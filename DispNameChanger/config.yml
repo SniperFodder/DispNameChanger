@@ -58,6 +58,9 @@
 # Valid Values: Command followed by any integer between 0 and N where
 #   N is infinite. If an invalid value or negative number is used, 0 is
 #   used by default.
+# Example:
+#   commands:
+#       msg: 1
 messages:
     death: true
     kick: true
@@ -77,4 +80,3 @@ save:
     rename: true
     quit: false
 commands:
-    example: 1
