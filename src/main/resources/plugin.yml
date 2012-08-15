@@ -39,8 +39,8 @@ commands:
         description: Shows a list of all the users and their display names.
         permission: dispname.list
         usage: |
-            /list
-            Aliases: listnames
+            /displaylist [page number]
+            Aliases: listnames, displist, dnclist
 permissions:
     dispname.*:
         description: Allows access to all DispNameChanger commands and reserved color codes.
@@ -52,14 +52,41 @@ permissions:
             dispname.check: true
             dispname.color.*: true
             dispname.list: true
+            
     dispname.color.*:
-        description: Allows access to all the Special Color Codes for use in display names.
+        description: Allows access to all Color Codes and Styles.
         children:
-            dispname.color.bold: true
-            dispname.color.italic: true
-            dispname.color.magic: true
-            dispname.color.strike: true
-            dispname.color.underline: true
+            dispname.color.style.*: true
+            dispname.color.all: true
+            
+    dispname.color.style.*:
+        description: Allows access to all the Special Style Color Codes for use in display names.
+        children:
+            dispname.color.style.bold: true
+            dispname.color.style.italic: true
+            dispname.color.style.magic: true
+            dispname.color.style.strike: true
+            dispname.color.style.underline: true
+            
+    dispname.color.all:
+        description: Allows access to all the Color Codes for use in display names.
+        children:
+            dispname.color.black: true
+            dispname.color.darkblue: true
+            dispname.color.darkgreen: true
+            dispname.color.darkaqua: true
+            dispname.color.darkred: true
+            dispname.color.purple: true
+            dispname.color.orange: true
+            dispname.color.grey: true
+            dispname.color.darkgrey: true
+            dispname.color.indigo: true
+            dispname.color.brightgreen: true
+            dispname.color.aqua: true
+            dispname.color.red: true
+            dispname.color.pink: true
+            dispname.color.yellow: true
+            dispname.color.white: true
     dispname.announce:
         description: Allows a user to recieve admin only name change broadcasts.
         default: op
@@ -75,20 +102,68 @@ permissions:
     dispname.check:
         description: Allows a user to check who a renamed person is.
         default: true
-    dispname.color.bold:
+    dispname.color.style.bold:
         description: Allows a user to use the bold color code.
         default: op
-    dispname.color.italic:
+    dispname.color.style.italic:
         description: Allows a user to use the italic color code.
         default: op
-    dispname.color.magic:
+    dispname.color.style.magic:
         description: Allows a user to use the magic color code.
         default: op
-    dispname.color.strike:
+    dispname.color.style.strike:
         description: Allows a user to use the strikethrough color code.
         default: op
-    dispname.color.underline:
+    dispname.color.style.underline:
         description: Allows a user to use the underline color code.
+        default: op
+    dispname.color.black:
+        description: Allows use of the Black Color Code.
+        default: op
+    dispname.color.darkblue:
+        description: Allows use of the Dark Blue Color Code. Alt Name - Navy
+        default: op
+    dispname.color.darkgreen:
+        description: Allows use of the Dark Green Color Code. Alt Name - Green
+        default: op
+    dispname.color.darkaqua:
+        description: Allows use of the Dark Aqua Color Code. Alt Name - Teal
+        default: op
+    dispname.color.darkred:
+        description: Allows use of the Dark Red Color Code. Alt Name - Maroon
+        default: op
+    dispname.color.purple:
+        description: Allows use of the Purple Color Code.
+        default: op
+    dispname.color.orange:
+        description: Allows use of the Orange Color Code. Alt Name - Gold
+        default: op
+    dispname.color.grey:
+        description: Allows use of the Grey Color Code. Alt Name - Silver
+        default: op
+    dispname.color.darkgrey:
+        description: Allows use of the Dark Grey Color Code. Alt Name - Grey
+        default: op
+    dispname.color.indigo:
+        description: Allows use of the Indigo Color Code. Alt Name - Blue
+        default: op
+    dispname.color.brightgreen:
+        description: Allows use of the Bright Green Color Code. Alt Name - Lime
+        default: op
+    dispname.color.aqua:
+        description: Allows use of the Aqua Color Code.
+        default: op
+    dispname.color.red:
+        description: Allows use of the Red Color Code.
+        default: op
+    dispname.color.pink:
+        description: Allows use of the Pink Color Code.
+        default: op
+    dispname.color.yellow:
+        description: Allows use of the Yellow Color Code.
+        default: op
+    dispname.color.white:
+        description: Allows use of the White Color Code.
         default: op
     dispname.list:
         descriptions: Allows a user to list all the users with their display names.
