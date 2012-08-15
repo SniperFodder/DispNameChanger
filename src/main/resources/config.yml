@@ -1,4 +1,4 @@
-# Message settings change the behavior of DNC in regards to
+# Message settings change the behavior of DNC in reguards to
 #   the login/logout, kick, and death messages including the
 #   display name.
 # true: message should be changed to include display name.
@@ -30,21 +30,7 @@
 # ----
 # Language is used to set the language that the plugin will
 #   use for it's messages.
-# Valid values: en_US, fr
-# ----
-# Save sets when you want DNC to save the Display Names to the
-#   database. This allows you to adjust DNC's saving behaviour to
-#   match your plugin configuration. An example of this is if you
-#   use MobDisguise on your server. If you quite while disguised,
-#   your Display Name will be erased or changed if you have save
-#   on quit enabled. Another Example is if you have a plugin that
-#   colors DisplayNames seperatly from DNC. If you color your display
-#   name after changing it, you will lose those changes if saving is
-#   disabled on quit.
-#   Valid Values: True or False
-#       Rename: Save whenever a player is renamed.
-#       Quit: Save whenever a player leaves the server.
-# 
+# Valid values: en_US
 # ----
 # Commands allows a user to filter out commands from going under the
 #   display name replacement process that allow the use of display
@@ -58,9 +44,6 @@
 # Valid Values: Command followed by any integer between 0 and N where
 #   N is infinite. If an invalid value or negative number is used, 0 is
 #   used by default.
-# Example:
-#   commands:
-#       msg: 1
 messages:
     death: true
     kick: true
@@ -76,7 +59,5 @@ prefix:
         code: e
 scoreboard: false
 language: en_US
-save:
-    rename: true
-    quit: false
 commands:
+    example: 1

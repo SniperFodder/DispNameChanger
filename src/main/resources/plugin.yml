@@ -1,0 +1,95 @@
+##  Plugin Information  ##
+name: DispNameChanger
+version: 5.5.4
+description: Lets you change the display name of yourself or others.
+##  Original Author     ##
+author: captainawesome7
+##  Contributors        ##
+authors: [itsatacoshop247, Daxiongmao87, Luke Zwekii, Sammy, SniperFodder]
+website: http://dev.bukkit.org/server-mods/dispnamechanger/
+main: me.captain.dnc.DispNameChanger
+database: true
+softdepend: [Spout]
+commands:
+    rename:
+        aliases: newname
+        description: Changes the name of the player or target.
+        permission: dispname.change
+        usage: |
+            Surround names with spaces in quotes (i.e. "Super Bob").
+            /rename <target> <new name>
+            /rename <new name>
+            Aliases: newname
+    reset:
+        aliases: resetname
+        description: Resets the players name or target player.
+        permission: dispname.change
+        usage: |
+            /resetname [target]
+            Aliases: resetname
+    check:
+        aliases: [checkname, namecheck, realname]
+        description: Shows the alternate name of the player (Real name or Display name).
+        permission: dispname.check
+        usage: |
+            /checkname <name>
+            Aliases: checkname, namecheck
+    displaylist:
+        aliases: [listnames, displist, dnclist]
+        description: Shows a list of all the users and their display names.
+        permission: dispname.list
+        usage: |
+            /list
+            Aliases: listnames
+permissions:
+    dispname.*:
+        description: Allows access to all DispNameChanger commands and reserved color codes.
+        children:
+            dispname.announce: true
+            dispname.change: true
+            dispname.changeother: true
+            dispname.changespace: true
+            dispname.check: true
+            dispname.color.*: true
+            dispname.list: true
+    dispname.color.*:
+        description: Allows access to all the Special Color Codes for use in display names.
+        children:
+            dispname.color.bold: true
+            dispname.color.italic: true
+            dispname.color.magic: true
+            dispname.color.strike: true
+            dispname.color.underline: true
+    dispname.announce:
+        description: Allows a user to recieve admin only name change broadcasts.
+        default: op
+    dispname.change:
+        description: Allows a user to change their display name.
+        default: op
+    dispname.changeother:
+        description: Allows a user to change someone else's display name.
+        default: op
+    dispname.changespace:
+        description: Allows a user to use a space in the display name.
+        default: op
+    dispname.check:
+        description: Allows a user to check who a renamed person is.
+        default: true
+    dispname.color.bold:
+        description: Allows a user to use the bold color code.
+        default: op
+    dispname.color.italic:
+        description: Allows a user to use the italic color code.
+        default: op
+    dispname.color.magic:
+        description: Allows a user to use the magic color code.
+        default: op
+    dispname.color.strike:
+        description: Allows a user to use the strikethrough color code.
+        default: op
+    dispname.color.underline:
+        description: Allows a user to use the underline color code.
+        default: op
+    dispname.list:
+        descriptions: Allows a user to list all the users with their display names.
+        default: true
