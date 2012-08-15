@@ -1,12 +1,12 @@
 ##  Plugin Information  ##
-name: DispNameChanger
-version: 5.5.4
-description: Lets you change the display name of yourself or others.
+name: ${project.name}
+version: ${project.version}
+description: ${project.description}
+website: ${project.url}
 ##  Original Author     ##
 author: captainawesome7
 ##  Contributors        ##
 authors: [itsatacoshop247, Daxiongmao87, Luke Zwekii, Sammy, SniperFodder]
-website: http://dev.bukkit.org/server-mods/dispnamechanger/
 main: me.captain.dnc.DispNameChanger
 database: true
 softdepend: [Spout]

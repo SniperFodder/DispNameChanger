@@ -7,7 +7,8 @@
   <artifactId>DispNameChanger</artifactId>
   <version>5.5.4</version>
   <name>DispNameChanger</name>
-  <description>DispNameChanger</description>
+  <description>Lets you change the display name of yourself or others</description>
+  <url>http://dev.bukkit.org/server-mods/dispnamechanger/</url>
 
   <repositories>
     <repository>
