@@ -360,7 +360,10 @@ public class DispNameCE implements CommandExecutor
 			// Attempt to Change Name.
 			try
 			{
-				api.changeDisplayName((Player) sender, saArgs[0]);
+				if( sender instanceof Player ) 
+					api.changeDisplayName((Player) sender, saArgs[0]);
+				else
+					sender.sendMessage("Console cannot change its name");
 				
 				return true;
 			}
@@ -400,7 +403,7 @@ public class DispNameCE implements CommandExecutor
 				
 				try
 				{
-					api.changeDisplayName((Player) sender, players[0],
+					api.changeDisplayName(sender, players[0],
 							saArgs[1]);
 					
 					return true;
@@ -501,18 +504,23 @@ public class DispNameCE implements CommandExecutor
 				return true;
 				// One User Matched
 			case 1:
-				Player p = (Player) sender;
+				Player p = null;
+				if( sender instanceof Player )
+					p = (Player) sender;
 				
 				try
 				{
-					api.changeDisplayName(p, players[0], players[0].getName());
+					api.changeDisplayName(sender, players[0], players[0].getName());
 					
 					return true;
 				}
 				catch (NonUniqueNickException e)
 				{
+					String displayName=null;
+					if( p != null )
+						displayName = p.getDisplayName();
 					log.severe("There was an error reverting from the DisplayName: Display - "
-							+ p.getDisplayName()
+							+ displayName
 							+ " | BadNick: "
 							+ e.getBadName());
 					

@@ -611,7 +611,7 @@ public class DispNameAPI
 	 *             if Non-Unique name is specified and Scoreboard
 	 *             integration is enabled.
 	 */
-	public void changeDisplayName(Player caller, Player target, String newName)
+	public void changeDisplayName(CommandSender caller, Player target, String newName)
 			throws NonUniqueNickException
 	{
 		Object[] users = new Object[2];
@@ -705,7 +705,7 @@ public class DispNameAPI
 		
 		if (plugin.useGlobalAnnounce())
 		{
-			Player[] exclude;
+			CommandSender[] exclude;
 			
 			// Exclude the people we've sent a message to already.
 			if (caller != null)
@@ -1028,7 +1028,7 @@ public class DispNameAPI
 	 * 
 	 * @return An array of players that excludes the given array.
 	 */
-	public Player[] getAnnounceTargets(Player[] exclude)
+	public Player[] getAnnounceTargets(CommandSender[] exclude)
 	{
 		if (exclude == null || exclude.length == 0)
 		{
@@ -1045,7 +1045,7 @@ public class DispNameAPI
 		for (Player online : onlinePlayers)
 		{
 			
-			for (Player excluded : exclude)
+			for (CommandSender excluded : exclude)
 			{
 				if (excluded.getName().equals(online.getName()))
 				{

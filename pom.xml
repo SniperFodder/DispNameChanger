@@ -5,7 +5,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>me.captain.dnc</groupId>
   <artifactId>DispNameChanger</artifactId>
-  <version>5.5.4</version>
+  <version>5.6.1</version>
   <name>DispNameChanger</name>
   <description>Lets you change the display name of yourself or others</description>
   <url>http://dev.bukkit.org/server-mods/dispnamechanger/</url>
