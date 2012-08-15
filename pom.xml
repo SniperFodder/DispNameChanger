@@ -23,11 +23,6 @@
       <id>spout-repo</id>
       <url>http://nexus.spout.org/content/groups/public/</url>
     </repository>
-
-    <repository>
-      <id>morganm-repo</id>
-      <url>http://morganmc.dyndns.org/nexus/content/groups/public/</url>
-    </repository>
   </repositories>
 
   <dependencies>
