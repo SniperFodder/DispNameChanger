@@ -41,10 +41,16 @@
 #   colors DisplayNames seperatly from DNC. If you color your display
 #   name after changing it, you will lose those changes if saving is
 #   disabled on quit.
-#   Valid Values: True or False
+# Valid Values: True or False
 #       Rename: Save whenever a player is renamed.
 #       Quit: Save whenever a player leaves the server.
-# 
+# ----
+# Pagination is for the Display List command. This allows you to
+#   to specify how many names per page are listed when you type the
+#   command. If Pagination is set to 0 or a none-positive number,
+#   pagination will be disabled.
+# Valid Values: 0 - N
+#   Default: 20
 # ----
 # Commands allows a user to filter out commands from going under the
 #   display name replacement process that allow the use of display
@@ -79,4 +85,5 @@ language: en_US
 save:
     rename: true
     quit: false
+pagination: 20
 commands:

@@ -84,6 +84,8 @@ public class DispNameChanger extends JavaPlugin
 	
 	private boolean bUseScoreboard;
 	
+	private int iDisplayPages;
+	
 	// private boolean bStatsEnabled;
 	
 	// private boolean bStatsMessage;
@@ -133,6 +135,8 @@ public class DispNameChanger extends JavaPlugin
 		bSaveOnQuit = false;
 		
 		bSaveOnRename = true;
+		
+		iDisplayPages = 20;
 		
 		// bStatsEnabled = true;
 		
@@ -238,6 +242,11 @@ public class DispNameChanger extends JavaPlugin
 	public DNCLocalization getLocalization()
 	{
 		return localization;
+	}
+	
+	public int getPagination()
+	{
+		return iDisplayPages;
 	}
 	
 	/**
@@ -622,6 +631,20 @@ public class DispNameChanger extends JavaPlugin
 		
 		bSaveOnRename = conf.getBoolean("save.rename");
 		
+		String sPages = conf.getString("pagination");
+		
+		if(sPages != null)
+		{
+			try
+			{
+				iDisplayPages = Integer.parseInt(sPages);
+			}
+			catch (NumberFormatException e)
+			{
+				conf.set("pagination", 20);
+			}
+		}
+
 		// bStatsEnabled = conf.getBoolean("stats.enabled");
 		
 		// bStatsMessage = conf.getBoolean("stats.message");

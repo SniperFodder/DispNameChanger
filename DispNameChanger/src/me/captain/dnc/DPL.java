@@ -112,13 +112,7 @@ public class DPL implements Listener
 			
 			SpoutPlayer spoutTarget = (SpoutPlayer) player;
 			
-			System.out.println("Join - DisplayName: " + player.getDisplayName());
-			
-			System.out.println("Join - Title - Before: " + spoutTarget.getTitle());
-			
 			spoutTarget.setTitle(player.getDisplayName());
-			
-			System.out.println("Join - Title - After: " + spoutTarget.getTitle());
 			
 			plugin.getServer().getScheduler()
 				.scheduleSyncDelayedTask(plugin, new RenameTask(player), 1L);
@@ -467,14 +461,8 @@ public class DPL implements Listener
 		
 		@Override
 		public void run()
-		{
-			System.out.println("Rename - DisplayName: " + player.getDisplayName());
-			
-			System.out.println("Rename - Title - Before: " + player.getTitle());
-			
+		{			
 			player.setTitle(player.getDisplayName());
-			
-			System.out.println("Rename - Title - After: " + player.getTitle());
 		}
 	}
 }

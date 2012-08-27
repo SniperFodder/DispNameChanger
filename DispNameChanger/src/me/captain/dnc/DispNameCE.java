@@ -29,10 +29,6 @@ import org.bukkit.entity.Player;
  */
 public class DispNameCE implements CommandExecutor
 {
-	/**
-	 * The max players per page allowed for the pagination of DisplayList.
-	 */
-	public static final int MAX_PLAYERS_PER_PAGE = 7;
 	
 	private static final Logger log = Bukkit.getLogger();
 	
@@ -177,6 +173,26 @@ public class DispNameCE implements CommandExecutor
 		
 		int iStartIndex;
 		
+		if(plugin.getPagination() == 0)
+		{
+			Player[] players = Bukkit.getOnlinePlayers();
+			
+			for(Player p: players)
+			{
+				if(!p.getName().equals(p.getDisplayName()))
+				{
+					oNames[0] = p.getName();
+					
+					oNames[1] = p.getDisplayName();
+					
+					api.sendMessage(DNCStrings.INFO_CHECK_SINGLE, sender, oNames,
+							MessageType.INFO);
+				}
+			}
+			
+			return true;
+		}
+		
 		// Get the page Number
 		if (args.length == 0)
 		{
@@ -241,7 +257,7 @@ public class DispNameCE implements CommandExecutor
 					MessageType.CONFIRMATION);
 		}
 		
-		for (int iLoop1 = iStartIndex; iLoop1 <= ((iStartIndex + MAX_PLAYERS_PER_PAGE) - 1); iLoop1++)
+		for (int iLoop1 = iStartIndex; iLoop1 <= ((iStartIndex + plugin.getPagination()) - 1); iLoop1++)
 		{
 			if (iLoop1 > (aPlayers.length - 1))
 			{
@@ -545,15 +561,15 @@ public class DispNameCE implements CommandExecutor
 	 */
 	private int getMaxPages(int size)
 	{
-		int iReturn = size % MAX_PLAYERS_PER_PAGE;
+		int iReturn = size % plugin.getPagination();
 		
 		if (iReturn == 0)
 		{
-			return size / MAX_PLAYERS_PER_PAGE;
+			return size / plugin.getPagination();
 		}
 		else
 		{
-			return (size / MAX_PLAYERS_PER_PAGE) + 1;
+			return (size / plugin.getPagination()) + 1;
 		}
 	}
 	
@@ -581,7 +597,7 @@ public class DispNameCE implements CommandExecutor
 			iIndex = pageNumber;
 		}
 		
-		return ((iIndex - 1) * MAX_PLAYERS_PER_PAGE);
+		return ((iIndex - 1) * plugin.getPagination());
 	}
 	
 	/**
