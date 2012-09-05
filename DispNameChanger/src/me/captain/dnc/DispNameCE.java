@@ -403,6 +403,15 @@ public class DispNameCE implements CommandExecutor
 			// Target Match Found
 			else if (players.length == 1)
 			{
+				if(!players[0].equals((Player) sender))
+				{
+					if(!api.canUseChangeNameOther(sender))
+					{
+						api.sendMessage(DNCStrings.PERMISSION_OTHER, sender, null, MessageType.ERROR);
+						
+						return true;
+					}
+				}
 				if (saArgs[1].contains(" "))
 				{
 					if (!api.canUseChangeNameSpace(sender))
