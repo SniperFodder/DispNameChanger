@@ -611,7 +611,7 @@ public class DispNameAPI
 	 *             if Non-Unique name is specified and Scoreboard
 	 *             integration is enabled.
 	 */
-	public void changeDisplayName(Player caller, Player target, String newName)
+	public void changeDisplayName(CommandSender sender, Player target, String newName)
 			throws NonUniqueNickException
 	{
 		Object[] users = new Object[2];
@@ -669,9 +669,9 @@ public class DispNameAPI
 		sendMessage(DNCStrings.INFO_NICK_TARGET, target, users,
 				MessageType.CONFIRMATION);
 		
-		if (caller != null && !caller.equals(target))
+		if (sender != null && !sender.equals(target))
 		{
-			sendMessage(DNCStrings.INFO_NICK_CALLER, caller, users,
+			sendMessage(DNCStrings.INFO_NICK_CALLER, sender, users,
 					MessageType.CONFIRMATION);
 		}
 		
@@ -686,9 +686,9 @@ public class DispNameAPI
 						spoutName, Material.DIAMOND);
 			}
 			
-			if (caller != null && !caller.equals(target))
+			if (sender != null && (sender instanceof Player) && !sender.equals(target))
 			{
-				SpoutPlayer spoutCaller = (SpoutPlayer) caller;
+				SpoutPlayer spoutCaller = (SpoutPlayer) sender;
 				
 				if (spoutCaller.isSpoutCraftEnabled())
 				{
@@ -708,11 +708,11 @@ public class DispNameAPI
 			Player[] exclude;
 			
 			// Exclude the people we've sent a message to already.
-			if (caller != null)
+			if (sender != null && (sender instanceof Player))
 			{
 				exclude = new Player[2];
 				
-				exclude[0] = caller;
+				exclude[0] = (Player) sender;
 				
 				exclude[1] = target;
 			}
@@ -1028,7 +1028,7 @@ public class DispNameAPI
 	 * 
 	 * @return An array of players that excludes the given array.
 	 */
-	public Player[] getAnnounceTargets(Player[] exclude)
+	public Player[] getAnnounceTargets(CommandSender[] exclude)
 	{
 		if (exclude == null || exclude.length == 0)
 		{
@@ -1045,7 +1045,7 @@ public class DispNameAPI
 		for (Player online : onlinePlayers)
 		{
 			
-			for (Player excluded : exclude)
+			for (CommandSender excluded : exclude)
 			{
 				if (excluded.getName().equals(online.getName()))
 				{
@@ -1677,9 +1677,8 @@ public class DispNameAPI
 		DP pClass = (DP) plugin.getDatabase().find(DP.class).where()
 				.ieq("PlayerName", sName).findUnique();
 		
-		if (sName.equals(sDName))
+		if (!isNameChanged(player))
 		{
-			
 			if (pClass != null)
 			{
 				plugin.getDatabase().delete(pClass);
@@ -1774,5 +1773,17 @@ public class DispNameAPI
 		{
 			return new DispNameAPI();
 		}
+	}
+	
+	/**
+	 * Checks to see if the name has been changed.
+	 * 
+	 * @param player player to check.
+	 * 
+	 * @return true if changed. False otherwise.
+	 */
+	public boolean isNameChanged(Player player)
+	{
+		return !player.getName().equals(player.getDisplayName());
 	}
 }

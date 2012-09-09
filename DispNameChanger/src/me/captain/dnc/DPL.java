@@ -1,6 +1,5 @@
 package me.captain.dnc;
 
-import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.TimerTask;
@@ -9,7 +8,6 @@ import java.util.logging.Logger;
 import me.captain.dnc.DispNameAPI.MessageType;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -36,10 +34,6 @@ public class DPL implements Listener
 	
 	private DispNameChanger plugin;
 	
-	private MessageFormat formatter;
-	
-	private DNCLocalization locale;
-	
 	private DispNameAPI api;
 	
 	/**
@@ -53,10 +47,6 @@ public class DPL implements Listener
 		plugin = DispNameChanger.getInstance();
 		
 		api = DispNameAPI.getInstance();
-		
-		locale = plugin.getLocalization();
-		
-		formatter = new MessageFormat("");
 	}
 	
 	/**
@@ -68,18 +58,16 @@ public class DPL implements Listener
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onPlayerDeath(final PlayerDeathEvent event)
 	{
+		if (!plugin.changeDeath())
+			return;
+		
 		Player player = event.getEntity();
 		
-		if (plugin.changeDeath())
-		{
-			Object[] user =
-			{ player.getDisplayName() };
-			
-			formatter.applyPattern(locale
-					.getString(DNCStrings.INFO_PLAYER_DEATH));
-			
-			event.setDeathMessage(formatter.format(user));
-		}
+		if (!api.isNameChanged(player))
+			return;
+		
+		event.setDeathMessage(event.getDeathMessage().replaceFirst(
+				player.getName(), player.getDisplayName()));
 	}
 	
 	/**
@@ -98,24 +86,23 @@ public class DPL implements Listener
 		
 		if (plugin.changeLogin())
 		{
-			Object[] user =
-			{ event.getPlayer().getDisplayName(), ChatColor.YELLOW };
-			
-			formatter.applyPattern(locale
-					.getString(DNCStrings.INFO_PLAYER_JOIN));
-			
-			event.setJoinMessage(ChatColor.YELLOW + formatter.format(user));
+			if (api.isNameChanged(player))
+			{
+				event.setJoinMessage(event.getJoinMessage().replaceFirst(
+						player.getName(), player.getDisplayName()));
+			}
 		}
 		
 		if (plugin.isSpoutEnabled())
 		{
-			
 			SpoutPlayer spoutTarget = (SpoutPlayer) player;
 			
 			spoutTarget.setTitle(player.getDisplayName());
 			
-			plugin.getServer().getScheduler()
-				.scheduleSyncDelayedTask(plugin, new RenameTask(player), 1L);
+			plugin.getServer()
+					.getScheduler()
+					.scheduleSyncDelayedTask(plugin, new RenameTask(player),
+							1L);
 		}
 	}
 	
@@ -133,19 +120,19 @@ public class DPL implements Listener
 			return;
 		}
 		
+		log.info("onPlayerKick - before:" + event.getLeaveMessage());
+		
 		Player player = event.getPlayer();
-
+		
 		savePlayer(player);
 		
 		if (plugin.changeKick())
 		{
-			Object[] user =
-			{ player.getDisplayName(), ChatColor.YELLOW };
-			
-			formatter.applyPattern(locale
-					.getString(DNCStrings.INFO_PLAYER_KICK));
-			
-			event.setLeaveMessage(ChatColor.YELLOW + formatter.format(user));
+			if (api.isNameChanged(player))
+			{
+				event.setLeaveMessage(event.getLeaveMessage().replaceFirst(
+						player.getName(), player.getDisplayName()));
+			}
 		}
 	}
 	
@@ -164,14 +151,11 @@ public class DPL implements Listener
 		
 		if (plugin.changeLogin())
 		{
-			Object[] user =
-			{ player.getDisplayName(), ChatColor.YELLOW };
-			
-			formatter.applyPattern(locale
-					.getString(DNCStrings.INFO_PLAYER_QUIT));
-			
-			event.setQuitMessage(ChatColor.YELLOW + formatter.format(user));
-			
+			if (api.isNameChanged(player))
+			{
+				event.setQuitMessage(event.getQuitMessage().replaceFirst(
+						player.getName(), player.getDisplayName()));
+			}
 		}
 	}
 	
@@ -233,7 +217,8 @@ public class DPL implements Listener
 			default:
 				event.setCancelled(true);
 				
-				api.sendMessage(DNCStrings.ERROR_MULTI_MATCH, player, null, MessageType.ERROR);
+				api.sendMessage(DNCStrings.ERROR_MULTI_MATCH, player, null,
+						MessageType.ERROR);
 			}
 			break;
 		// Possible Command + Multipart DispName
@@ -253,7 +238,7 @@ public class DPL implements Listener
 			sbCommand.append(args[0]).append(" ");
 			
 			for (String s : saParsed)
-			{				
+			{
 				target = api.checkName(s);
 				
 				if (target.length == 0)
@@ -269,11 +254,12 @@ public class DPL implements Listener
 					
 					if (!target[0].getName().equalsIgnoreCase(s))
 					{
-						if(iReplaceMax > -1)
+						if (iReplaceMax > -1)
 						{
-							if(iReplaceCount < iReplaceMax)
+							if (iReplaceCount < iReplaceMax)
 							{
-								sbCommand.append(target[0].getName()).append(" ");
+								sbCommand.append(target[0].getName()).append(
+										" ");
 								
 								iReplaceCount++;
 							}
@@ -298,7 +284,8 @@ public class DPL implements Listener
 					
 					event.setCancelled(true);
 					
-					api.sendMessage(DNCStrings.ERROR_MULTI_MATCH, player, null, MessageType.ERROR);
+					api.sendMessage(DNCStrings.ERROR_MULTI_MATCH, player,
+							null, MessageType.ERROR);
 					
 					sbCommand = null;
 					
@@ -375,9 +362,9 @@ public class DPL implements Listener
 		
 		HashMap<String, Integer> cmdFilter = plugin.getCommandList();
 		
-		for(String s: cmdFilter.keySet())
+		for (String s : cmdFilter.keySet())
 		{
-			if(s.equalsIgnoreCase(sCommand) && cmdFilter.get(s) == 0)
+			if (s.equalsIgnoreCase(sCommand) && cmdFilter.get(s) == 0)
 			{
 				return true;
 			}
@@ -388,6 +375,7 @@ public class DPL implements Listener
 	
 	/**
 	 * Checks to see if the given command is in the filtered list.
+	 * 
 	 * @param command
 	 * @return
 	 */
@@ -395,7 +383,7 @@ public class DPL implements Listener
 	{
 		String sCommand;
 		
-		if(command.startsWith("/"))
+		if (command.startsWith("/"))
 		{
 			sCommand = command.substring(1, command.length());
 		}
@@ -406,9 +394,9 @@ public class DPL implements Listener
 		
 		HashMap<String, Integer> cmdFilter = plugin.getCommandList();
 		
-		for(String s: cmdFilter.keySet())
+		for (String s : cmdFilter.keySet())
 		{
-			if(s.equalsIgnoreCase(sCommand))
+			if (s.equalsIgnoreCase(sCommand))
 			{
 				return cmdFilter.get(s);
 			}
@@ -419,16 +407,17 @@ public class DPL implements Listener
 	/**
 	 * Remove a player that was in the ordered list.
 	 * 
-	 * @param p the player to remove.
+	 * @param p
+	 *            the player to remove.
 	 */
 	private void removeOrderedPlayer(Player p)
 	{
-		if(plugin.getOrderedPlayers().containsKey(p.getName()))
+		if (plugin.getOrderedPlayers().containsKey(p.getName()))
 		{
 			plugin.getOrderedPlayers().remove(p.getName());
 		}
 	}
-
+	
 	/**
 	 * Saves a players name on save if Saving on quit is enabled.
 	 * 
@@ -436,7 +425,7 @@ public class DPL implements Listener
 	 */
 	private void savePlayer(Player player)
 	{
-		if(plugin.isSaveOnQuit())
+		if (plugin.isSaveOnQuit())
 		{
 			api.storeNick(player);
 		}
@@ -461,7 +450,7 @@ public class DPL implements Listener
 		
 		@Override
 		public void run()
-		{			
+		{
 			player.setTitle(player.getDisplayName());
 		}
 	}

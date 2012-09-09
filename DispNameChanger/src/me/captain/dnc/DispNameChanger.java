@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.Collator;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -118,7 +119,11 @@ public class DispNameChanger extends JavaPlugin
 		
 		hCommands = new HashMap<String, Integer>();
 		
-		tmPlayers = new TreeMap<String, Player>();
+		Collator collator = Collator.getInstance(Locale.ENGLISH);
+		
+		collator.setStrength(Collator.PRIMARY);
+		
+		tmPlayers = new TreeMap<String, Player>(collator);
 		
 		bBroadcastAll = true;
 		

@@ -125,26 +125,6 @@ public enum DNCStrings
 	INFO_NO_SPOUT,
 	
 	/**
-	 * Death message with nick.
-	 */
-	INFO_PLAYER_DEATH,
-	
-	/**
-	 * Join message with nick.
-	 */
-	INFO_PLAYER_JOIN,
-	
-	/**
-	 * Kick message with nick.
-	 */
-	INFO_PLAYER_KICK,
-	
-	/**
-	 * Quit message with nick.
-	 */
-	INFO_PLAYER_QUIT,
-	
-	/**
 	 * Called if saving completely disabled by config options.
 	 */
 	INFO_SAVE_DISABLED,

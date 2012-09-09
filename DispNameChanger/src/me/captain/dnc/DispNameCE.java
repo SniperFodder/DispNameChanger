@@ -1,10 +1,6 @@
 package me.captain.dnc;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
+import java.util.Collection;
 import java.util.logging.Logger;
 
 import me.captain.dnc.DispNameAPI.MessageType;
@@ -173,20 +169,20 @@ public class DispNameCE implements CommandExecutor
 		
 		int iStartIndex;
 		
-		if(plugin.getPagination() == 0)
+		if (plugin.getPagination() == 0)
 		{
-			Player[] players = Bukkit.getOnlinePlayers();
+			Player[] players = getPlayerList();
 			
-			for(Player p: players)
+			for (Player p : players)
 			{
-				if(!p.getName().equals(p.getDisplayName()))
+				if (!p.getName().equals(p.getDisplayName()))
 				{
 					oNames[0] = p.getName();
 					
 					oNames[1] = p.getDisplayName();
 					
-					api.sendMessage(DNCStrings.INFO_CHECK_SINGLE, sender, oNames,
-							MessageType.INFO);
+					api.sendMessage(DNCStrings.INFO_CHECK_SINGLE, sender,
+							oNames, MessageType.INFO);
 				}
 			}
 			
@@ -257,7 +253,8 @@ public class DispNameCE implements CommandExecutor
 					MessageType.CONFIRMATION);
 		}
 		
-		for (int iLoop1 = iStartIndex; iLoop1 <= ((iStartIndex + plugin.getPagination()) - 1); iLoop1++)
+		for (int iLoop1 = iStartIndex; iLoop1 <= ((iStartIndex + plugin
+				.getPagination()) - 1); iLoop1++)
 		{
 			if (iLoop1 > (aPlayers.length - 1))
 			{
@@ -376,7 +373,15 @@ public class DispNameCE implements CommandExecutor
 			// Attempt to Change Name.
 			try
 			{
-				api.changeDisplayName((Player) sender, saArgs[0]);
+				if (sender instanceof Player)
+				{
+					api.changeDisplayName((Player) sender, saArgs[0]);
+				}
+				else
+				{
+					api.sendMessage(DNCStrings.ERROR_CONSOLE_RENAME, sender,
+							null, MessageType.ERROR);
+				}
 				
 				return true;
 			}
@@ -403,11 +408,13 @@ public class DispNameCE implements CommandExecutor
 			// Target Match Found
 			else if (players.length == 1)
 			{
-				if(!players[0].equals((Player) sender))
+				if ((sender instanceof Player)
+						&& !players[0].equals((Player) sender))
 				{
-					if(!api.canUseChangeNameOther(sender))
+					if (!api.canUseChangeNameOther(sender))
 					{
-						api.sendMessage(DNCStrings.PERMISSION_OTHER, sender, null, MessageType.ERROR);
+						api.sendMessage(DNCStrings.PERMISSION_OTHER, sender,
+								null, MessageType.ERROR);
 						
 						return true;
 					}
@@ -425,8 +432,7 @@ public class DispNameCE implements CommandExecutor
 				
 				try
 				{
-					api.changeDisplayName((Player) sender, players[0],
-							saArgs[1]);
+					api.changeDisplayName(sender, players[0], saArgs[1]);
 					
 					return true;
 				}
@@ -526,18 +532,30 @@ public class DispNameCE implements CommandExecutor
 				return true;
 				// One User Matched
 			case 1:
-				Player p = (Player) sender;
+				Player p = null;
+				
+				if(sender instanceof Player)
+				{
+					p = (Player) sender;
+				}
 				
 				try
 				{
-					api.changeDisplayName(p, players[0], players[0].getName());
+					api.changeDisplayName(sender, players[0], players[0].getName());
 					
 					return true;
 				}
 				catch (NonUniqueNickException e)
 				{
+					String sDisplayName = null;
+					
+					if( p != null)
+					{
+						sDisplayName = p.getDisplayName();
+					}
+					
 					log.severe("There was an error reverting from the DisplayName: Display - "
-							+ p.getDisplayName()
+							+ sDisplayName
 							+ " | BadNick: "
 							+ e.getBadName());
 					
@@ -617,30 +635,13 @@ public class DispNameCE implements CommandExecutor
 	 */
 	private Player[] getPlayerList()
 	{
-		ArrayList<Player> alPlayers = new ArrayList<Player>();
-		
 		Player[] aPlayers;
 		
-		Set<Entry<String, Player>> set = plugin.getOrderedPlayers().entrySet();
+		Collection<Player> collection = plugin.getOrderedPlayers().values();
 		
-		Iterator<Entry<String, Player>> i = set.iterator();
+		aPlayers = new Player[collection.size()];
 		
-		while (i.hasNext())
-		{
-			Map.Entry<String, Player> me = i.next();
-			
-			if (!me.getValue().getName()
-					.equals(me.getValue().getDisplayName()))
-			{
-				alPlayers.add(me.getValue());
-			}
-		}
-		
-		alPlayers.trimToSize();
-		
-		aPlayers = new Player[alPlayers.size()];
-		
-		alPlayers.toArray(aPlayers);
+		collection.toArray(aPlayers);
 		
 		return aPlayers;
 	}
