@@ -11,7 +11,7 @@ public enum DNCCommands
 	/**
 	 * The command used to trigger a check action.
 	 */
-	CHECK("check"),
+	CHECK("checkname"),
 	
 	/**
 	 * The command used to trigger a rename action.
