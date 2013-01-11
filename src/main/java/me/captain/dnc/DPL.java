@@ -202,7 +202,6 @@ public class DPL implements Listener
 			case 1:
 				if (!target[0].getName().equalsIgnoreCase(args[1]))
 				{
-					System.out.println("Switch 2 - Case 1: ");
 					sbCommand = new StringBuilder();
 					
 					sbCommand.append(args[0]).append(" ")
@@ -300,11 +299,7 @@ public class DPL implements Listener
 		
 		if (sbCommand != null)
 		{
-			event.setCancelled(true);
-			
 			event.setMessage(sbCommand.toString());
-			
-			player.chat(sbCommand.toString());
 			
 			StringBuilder sb = new StringBuilder();
 			
