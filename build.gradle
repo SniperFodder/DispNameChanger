@@ -5,7 +5,7 @@ apply plugin: 'eclipse'
 sourceCompatibility = 1.6
 
 // Plugin Version - Major / Minor / Bugfix
-version = "5.8.1"
+version = "5.8.1-SNAPSHOT"
 
 jar {
     manifest {
@@ -36,10 +36,10 @@ repositories {
 
 dependencies {
 	// Bukkit API Required Dependancy
-	compile group: 'org.bukkit', name: 'bukkit', version: '1.4.5-R1.0'
+	compile group: 'org.bukkit', name: 'bukkit', version: '1.4.6-R0.3'
 
 	// SpoutPlugin API Required Dependancy
-	compile group: 'org.getspout', name: 'spoutplugin', version: '1.4.5-R0.2-SNAPSHOT'
+	compile group: 'org.getspout', name: 'spoutplugin', version: '1.4.6-R0.2-SNAPSHOT'
 
 	// TagAPI Required Dependancy
 	compile group: 'org.kitteh', name: 'tagapi', version: '1.9.2'

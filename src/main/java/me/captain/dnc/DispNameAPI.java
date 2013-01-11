@@ -675,32 +675,38 @@ public class DispNameAPI
 					MessageType.CONFIRMATION);
 		}
 		
-		if (plugin.isSpoutEnabled() == true)
+		if (plugin.isSpoutEnabled())
 		{
 			SpoutPlayer spoutTarget = (SpoutPlayer) target;
 			
-			if (spoutTarget.isSpoutCraftEnabled())
+			if(plugin.useSpoutAnnounce())
 			{
-				spoutTarget.sendNotification(
-						locale.getString(DNCStrings.INFO_SPOUT_TARGET),
-						spoutName, Material.DIAMOND);
-			}
-			
-			if (sender != null && (sender instanceof Player) && !sender.equals(target))
-			{
-				SpoutPlayer spoutCaller = (SpoutPlayer) sender;
-				
-				if (spoutCaller.isSpoutCraftEnabled())
+				if (spoutTarget.isSpoutCraftEnabled())
 				{
-					formatter.applyPattern(locale
-							.getString(DNCStrings.INFO_SPOUT_CALLER));
-					
-					spoutCaller.sendNotification(formatter.format(users),
+					spoutTarget.sendNotification(
+							locale.getString(DNCStrings.INFO_SPOUT_TARGET),
 							spoutName, Material.DIAMOND);
+				}
+				
+				if (sender != null && (sender instanceof Player) && !sender.equals(target))
+				{
+					SpoutPlayer spoutCaller = (SpoutPlayer) sender;
+					
+					if (spoutCaller.isSpoutCraftEnabled())
+					{
+						formatter.applyPattern(locale
+								.getString(DNCStrings.INFO_SPOUT_CALLER));
+						
+						spoutCaller.sendNotification(formatter.format(users),
+								spoutName, Material.DIAMOND);
+					}
 				}
 			}
 			
-			spoutTarget.setTitle(spoutName);
+			if(plugin.useSpoutTitle())
+			{
+				spoutTarget.setTitle(spoutName);
+			}
 		}
 		
 		if (plugin.useGlobalAnnounce())
@@ -1537,7 +1543,7 @@ public class DispNameAPI
 		
 		player.setDisplayName(sDName);
 		
-		if (plugin.isSpoutEnabled())
+		if (plugin.isSpoutEnabled() && plugin.useSpoutTitle())
 		{
 			SpoutPlayer spoutPlayer = (SpoutPlayer) player;
 			

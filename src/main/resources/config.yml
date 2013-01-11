@@ -1,15 +1,33 @@
-# Message settings change the behavior of DNC in regards to
-#   the login/logout, kick, and death messages including the
-#   display name.
-# true: message should be changed to include display name.
-# false: message should be left alone.
-# ----
 # Global-Announce sets whether a global announcement of display
 #   names to users should be made whenever one is changed.
 #   Target represents either Admins only, or All users.
 # ALL: All users will recieve the name change broadcast.
 # ADMIN: Only users with the permission node 'dispname.announce'
 #   will recieve broadcasts.
+# ----
+# Integration is used to determine support for various Plugin API's
+#   that DNC will use. For instance, to turn off setting titles
+#   above a player's head in Spout, setting Spout.title:false will
+#   turn off titles, but not announcement messages.
+# True: Integration enabled for API or Specific Feature.
+# False: Integration disabled.
+# ----
+# Language is used to set the language that the plugin will
+#   use for it's messages.
+# Valid values: en_US, fr
+# ----
+# Message settings change the behavior of DNC in regards to
+#   the login/logout, kick, and death messages including the
+#   display name.
+# true: message should be changed to include display name.
+# false: message should be left alone.
+# ----
+# Pagination is for the Display List command. This allows you to
+#   to specify how many names per page are listed when you type the
+#   command. If Pagination is set to 0 or a none-positive number,
+#   pagination will be disabled.
+# Valid Values: 0 - N
+#   Default: 20
 # ----
 # Prefix toggles whether a character is prepended to display
 #   names. The default character is +. If a string is provided,
@@ -21,16 +39,6 @@
 #   code.
 # Color Codes can be found here:
 # http://www.minecraftwiki.net/wiki/Classic_server_protocol#Color_Codes
-# ----
-# Scoreboard toggles the use of the scoreboard integration.
-#   Note: Integration into scoreboard will force the player 
-#   display names to be unique. Names longer than 16 characters
-#   will be truncated on the player list. Each color code counts
-#   for two characters.
-# ----
-# Language is used to set the language that the plugin will
-#   use for it's messages.
-# Valid values: en_US, fr
 # ----
 # Save sets when you want DNC to save the Display Names to the
 #   database. This allows you to adjust DNC's saving behaviour to
@@ -45,12 +53,11 @@
 #       Rename: Save whenever a player is renamed.
 #       Quit: Save whenever a player leaves the server.
 # ----
-# Pagination is for the Display List command. This allows you to
-#   to specify how many names per page are listed when you type the
-#   command. If Pagination is set to 0 or a none-positive number,
-#   pagination will be disabled.
-# Valid Values: 0 - N
-#   Default: 20
+# Scoreboard toggles the use of the scoreboard integration.
+#   Note: Integration into scoreboard will force the player 
+#   display names to be unique. Names longer than 16 characters
+#   will be truncated on the player list. Each color code counts
+#   for two characters.
 # ----
 # Commands allows a user to filter out commands from going under the
 #   display name replacement process that allow the use of display
@@ -67,23 +74,27 @@
 # Example:
 #   commands:
 #       msg: 1
+global-announce:
+    enabled: true
+    target: ALL
+integration:
+    spout:
+        title: true
+        announcements: true
+language: en_US
 messages:
     death: true
     kick: true
     login: true
-global-announce:
-    enabled: true
-    target: ALL
+pagination: 20
 prefix:
     enabled: false
     character: '+'
     color:
         enabled: true
         code: e
-scoreboard: false
-language: en_US
 save:
     rename: true
     quit: false
-pagination: 20
+scoreboard: false
 commands:

@@ -83,6 +83,10 @@ public class DispNameChanger extends JavaPlugin
 	
 	private boolean bUseSpout;
 	
+	private boolean bUseSpoutTitle;
+	
+	private boolean bUseSpoutAnnounce;
+	
 	private boolean bUseScoreboard;
 	
 	private int iDisplayPages;
@@ -295,7 +299,8 @@ public class DispNameChanger extends JavaPlugin
 	}
 	
 	/**
-	 * Returns a map of commands and number of name replacements allowed for that command.
+	 * Returns a map of commands and number of name replacements allowed
+	 * for that command.
 	 * 
 	 * @return map of commands + max replacement.
 	 */
@@ -322,6 +327,28 @@ public class DispNameChanger extends JavaPlugin
 	public boolean isSpoutEnabled()
 	{
 		return bUseSpout;
+	}
+	
+	/**
+	 * Returns whether to use the spout title when spout is available.
+	 * 
+	 * @return true to change title, false otherwise.
+	 */
+	public boolean useSpoutTitle()
+	{
+		return bUseSpoutTitle;
+	}
+	
+	/**
+	 * Returns whether to use the Achievement plates in Spout to announce
+	 * name changes.
+	 * 
+	 * @return True to announce name changes through achievement plates.
+	 *         False otherwise.
+	 */
+	public boolean useSpoutAnnounce()
+	{
+		return bUseSpoutAnnounce;
 	}
 	
 	/**
@@ -372,15 +399,17 @@ public class DispNameChanger extends JavaPlugin
 		{
 			this.bUseSpout = true;
 			
-			log.info(DNCStrings.dnc_long + localization.getString(DNCStrings.INFO_SPOUT));
+			log.info(DNCStrings.dnc_long
+					+ localization.getString(DNCStrings.INFO_SPOUT));
 		}
 		
 		log.info(DNCStrings.dnc_long
 				+ localization.getString(DNCStrings.INFO_DNC_COMMANDS));
 		
-		if(!isSaveOnQuit() && !isSaveOnRename())
+		if (!isSaveOnQuit() && !isSaveOnRename())
 		{
-			log.severe(DNCStrings.dnc_long + localization.getString(DNCStrings.INFO_SAVE_DISABLED));
+			log.severe(DNCStrings.dnc_long
+					+ localization.getString(DNCStrings.INFO_SAVE_DISABLED));
 		}
 		
 		log.info(DNCStrings.dnc_long
@@ -636,9 +665,13 @@ public class DispNameChanger extends JavaPlugin
 		
 		bSaveOnRename = conf.getBoolean("save.rename");
 		
+		bUseSpoutTitle = conf.getBoolean("integration.spout.title");
+		
+		bUseSpoutAnnounce = conf.getBoolean("integration.spout.announcements");
+		
 		String sPages = conf.getString("pagination");
 		
-		if(sPages != null)
+		if (sPages != null)
 		{
 			try
 			{
@@ -649,7 +682,7 @@ public class DispNameChanger extends JavaPlugin
 				conf.set("pagination", 20);
 			}
 		}
-
+		
 		// bStatsEnabled = conf.getBoolean("stats.enabled");
 		
 		// bStatsMessage = conf.getBoolean("stats.message");
@@ -675,7 +708,8 @@ public class DispNameChanger extends JavaPlugin
 		
 		if (locale == null)
 		{
-			log.severe(DNCStrings.dnc_long + "Unknown Locale given: " + sLocale);
+			log.severe(DNCStrings.dnc_long + "Unknown Locale given: "
+					+ sLocale);
 			
 			log.severe(DNCStrings.dnc_long + "Reverting to English!");
 			
