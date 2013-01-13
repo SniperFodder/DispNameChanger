@@ -13,6 +13,7 @@ import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.command.RemoteConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.getspout.spoutapi.player.SpoutPlayer;
+import org.kitteh.tag.TagAPI;
 
 /**
  * Provides API Calls for DNC code and any related plugins.
@@ -642,6 +643,12 @@ public class DispNameAPI
 		
 		// Set the DisplayName
 		target.setDisplayName(spoutName);
+		
+		// Refresh the tag on the player for everyone if TagAPI available.
+		if(plugin.isTagAPIEnabled())
+		{
+			TagAPI.refreshPlayer(target);
+		}
 		
 		// Ensure Name will fit with scoreboard.
 		if (plugin.useScoreboard())

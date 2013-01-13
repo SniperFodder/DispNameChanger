@@ -81,6 +81,8 @@ integration:
     spout:
         title: true
         announcements: true
+    tagAPI:
+        title: true
 language: en_US
 messages:
     death: true

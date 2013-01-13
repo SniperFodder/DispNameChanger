@@ -47,6 +47,8 @@ public class DispNameChanger extends JavaPlugin
 	
 	private final DPL playerlistener;
 	
+	private TagListener tagListener;
+	
 	private ChatColor ccPrefix;
 	
 	private HashMap<String, Integer> hCommands;
@@ -54,6 +56,8 @@ public class DispNameChanger extends JavaPlugin
 	private Locale locale;
 	
 	private Plugin pSpout;
+	
+	private Plugin pTag;
 	
 	private Properties pVersion;
 	
@@ -88,6 +92,10 @@ public class DispNameChanger extends JavaPlugin
 	private boolean bUseSpoutAnnounce;
 	
 	private boolean bUseScoreboard;
+	
+	private boolean bUseTagAPI;
+	
+	private boolean bUseTagTitle;
 	
 	private int iDisplayPages;
 	
@@ -330,6 +338,17 @@ public class DispNameChanger extends JavaPlugin
 	}
 	
 	/**
+	 * Returns whether or not to use TagAPI. Tag API May be available but
+	 * disabled due to Spout also being loaded.
+	 * 
+	 * @return True if TagAPI Support enabled, false otherwise.
+	 */
+	public boolean isTagAPIEnabled()
+	{
+		return bUseTagAPI;
+	}
+	
+	/**
 	 * Returns whether to use the spout title when spout is available.
 	 * 
 	 * @return true to change title, false otherwise.
@@ -349,6 +368,16 @@ public class DispNameChanger extends JavaPlugin
 	public boolean useSpoutAnnounce()
 	{
 		return bUseSpoutAnnounce;
+	}
+	
+	/**
+	 * Checks to see if title integration should be used.
+	 * 
+	 * @return True to use the TagAPI title, false otherwise.
+	 */
+	public boolean useTagTitle()
+	{
+		return bUseTagTitle;
 	}
 	
 	/**
@@ -377,6 +406,8 @@ public class DispNameChanger extends JavaPlugin
 		
 		pSpout = pm.getPlugin("Spout");
 		
+		pTag = pm.getPlugin("TagAPI");
+		
 		formatTranslations();
 		
 		setupDatabase();
@@ -401,6 +432,32 @@ public class DispNameChanger extends JavaPlugin
 			
 			log.info(DNCStrings.dnc_long
 					+ localization.getString(DNCStrings.INFO_SPOUT));
+		}
+		
+		if (pTag != null && !bUseSpout)
+		{
+			bUseTagAPI = true;
+			
+			tagListener = new TagListener();
+			
+			pm.registerEvents(tagListener, this);
+			
+			log.info(DNCStrings.dnc_long
+					+ localization.getString(DNCStrings.INFO_TAGAPI));
+		}
+		else if (pTag != null && bUseSpout)
+		{
+			bUseTagAPI = false;
+			
+			log.warning(DNCStrings.dnc_long
+					+ localization.getString(DNCStrings.INFO_TAGAPI_CONFLICT));
+		}
+		else
+		{
+			bUseTagAPI = false;
+			
+			log.info(DNCStrings.dnc_long
+					+ localization.getString(DNCStrings.INFO_NO_TAGAPI));
 		}
 		
 		log.info(DNCStrings.dnc_long
@@ -463,6 +520,8 @@ public class DispNameChanger extends JavaPlugin
 	{
 		Object[] spoutArgs = new Object[1];
 		
+		Object[] tagArgs = new Object[1];
+		
 		if (pSpout != null)
 		{
 			spoutArgs[0] = pSpout.getDescription().getVersion();
@@ -470,6 +529,15 @@ public class DispNameChanger extends JavaPlugin
 		else
 		{
 			spoutArgs[0] = "unknown";
+		}
+		
+		if (pTag != null)
+		{
+			tagArgs[0] = pTag.getDescription().getVersion();
+		}
+		else
+		{
+			tagArgs[0] = "unknown";
 		}
 		
 		List<String> authors = getDescription().getAuthors();
@@ -502,6 +570,11 @@ public class DispNameChanger extends JavaPlugin
 		
 		localization.setString(DNCStrings.INFO_SPOUT,
 				formatter.format(spoutArgs));
+		
+		formatter.applyPattern(localization.getString(DNCStrings.INFO_TAGAPI));
+		
+		localization.setString(DNCStrings.INFO_TAGAPI,
+				formatter.format(tagArgs));
 		
 		formatter.applyPattern(localization
 				.getString(DNCStrings.INFO_DNC_ENABLED));
@@ -668,6 +741,8 @@ public class DispNameChanger extends JavaPlugin
 		bUseSpoutTitle = conf.getBoolean("integration.spout.title");
 		
 		bUseSpoutAnnounce = conf.getBoolean("integration.spout.announcements");
+		
+		bUseTagTitle = conf.getBoolean("integration.tagAPI.title");
 		
 		String sPages = conf.getString("pagination");
 		

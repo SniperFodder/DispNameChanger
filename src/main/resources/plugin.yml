@@ -9,7 +9,7 @@ authors: [itsatacoshop247, Daxiongmao87, Luke Zwekii, Sammy, SniperFodder, bearb
 website: http://dev.bukkit.org/server-mods/dispnamechanger/
 main: me.captain.dnc.DispNameChanger
 database: true
-softdepend: [Spout]
+softdepend: [Spout, TagAPI]
 commands:
     rename:
         aliases: newname
