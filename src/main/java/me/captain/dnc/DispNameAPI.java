@@ -902,6 +902,8 @@ public class DispNameAPI
 	 *            the name to check for.
 	 * 
 	 * @return an array of players matching the name of 0 to N in size.
+	 * 
+	 * @throws IllegalArgumentException if the name is null.
 	 */
 	public Player[] checkName(String name)
 	{

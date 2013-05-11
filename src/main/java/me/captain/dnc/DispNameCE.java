@@ -492,6 +492,13 @@ public class DispNameCE implements CommandExecutor
 			{
 				Player p = (Player) sender;
 				
+				// No need to reset name; The name hasn't been changed.
+				if(p.getName().equals(p.getDisplayName()))
+				{
+					api.sendMessage(DNCStrings.ERROR_NAME_RESET, p, null, MessageType.INFO);
+					return true;
+				}
+				
 				try
 				{
 					api.changeDisplayName(p, p.getName());

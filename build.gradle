@@ -38,13 +38,13 @@ repositories {
 
 dependencies {
 	// Bukkit API Required Dependancy
-	compile group: 'org.bukkit', name: 'bukkit', version: '1.4.6-R0.3'
+	compile group: 'org.bukkit', name: 'bukkit', version: '1.5.2-R0.1'
 
 	// SpoutPlugin API Required Dependancy
-	compile group: 'org.getspout', name: 'spoutplugin', version: '1.4.6-R0.2-SNAPSHOT'
+	compile group: 'org.getspout', name: 'spoutplugin', version: '1.5.1-R0.3-SNAPSHOT'
 
 	// TagAPI Required Dependancy
-	compile group: 'org.kitteh', name: 'tagapi', version: '1.9.2'
+	compile group: 'org.kitteh', name: 'tagapi', version: '2.3'
 	
 	testCompile 'junit:junit:4.8.2'
 }

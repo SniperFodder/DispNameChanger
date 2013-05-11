@@ -38,6 +38,11 @@ public enum DNCStrings
 	ERROR_MULTI_MATCH,
 	
 	/**
+	 * For when a user is trying to reset their own name and it is already at default.
+	 */
+	ERROR_NAME_RESET,
+	
+	/**
 	 * For when a name is non-unique.
 	 */
 	ERROR_NON_UNIQUE,
