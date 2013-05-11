@@ -61,13 +61,18 @@ public class DPL implements Listener
 		if (!plugin.changeDeath())
 			return;
 		
-		Player player = event.getEntity();
+		Player[] players = api.checkForNames(event.getDeathMessage());
 		
-		if (!api.isNameChanged(player))
-			return;
+		String sReplace = event.getDeathMessage();
 		
-		event.setDeathMessage(event.getDeathMessage().replaceFirst(
-				player.getName(), player.getDisplayName()));
+		for(Player target : players)
+		{
+			System.out.println("Replacing : " + target.getName());
+			sReplace = sReplace.replaceFirst(target.getName(), target.getDisplayName());
+			System.out.println(sReplace);
+		}
+		
+		event.setDeathMessage(sReplace);
 	}
 	
 	/**

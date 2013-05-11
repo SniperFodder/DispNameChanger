@@ -893,6 +893,54 @@ public class DispNameAPI
 	}
 	
 	/**
+	 * Returns a Player Array of Players in the order they were found by player login name.
+	 * 
+	 * @param text the text to check for names.
+	 * 
+	 * @return An ordered Player Array of found names.
+	 */
+	public Player[] checkForNames(String text)
+	{
+		String[] sInput = text.split(" ");
+		
+		Player[] pOnline = Bukkit.getOnlinePlayers();
+		
+		ArrayList<Player> pFound = new ArrayList<Player>();
+		
+		for(String word : sInput)
+		{
+			for(Player p : pOnline)
+			{
+				if(word.equals(p.getName()))
+				{
+					pFound.add(p);
+				}
+			}
+		}
+		
+		if(pFound.isEmpty())
+		{
+			System.out.println("Empty Array.");
+			return new Player[0];
+		}
+		
+		pFound.trimToSize();
+		
+		Player[] pResult = new Player[pFound.size()];
+		
+		pFound.toArray(pResult);
+		
+		System.out.println("Players found: ");
+		
+		for(Player p: pResult)
+		{
+			System.out.println(p.getDisplayName());
+		}
+		
+		return pResult;
+	}
+	
+	/**
 	 * Checks for a valid player based upon a given name. May return 0 to N
 	 * players currently in the server at the time of the check, where N =
 	 * MAX_PLAYERS. Names are cross checked. against both login and
