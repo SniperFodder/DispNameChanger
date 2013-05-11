@@ -920,7 +920,6 @@ public class DispNameAPI
 		
 		if(pFound.isEmpty())
 		{
-			System.out.println("Empty Array.");
 			return new Player[0];
 		}
 		
@@ -929,13 +928,6 @@ public class DispNameAPI
 		Player[] pResult = new Player[pFound.size()];
 		
 		pFound.toArray(pResult);
-		
-		System.out.println("Players found: ");
-		
-		for(Player p: pResult)
-		{
-			System.out.println(p.getDisplayName());
-		}
 		
 		return pResult;
 	}

@@ -67,9 +67,7 @@ public class DPL implements Listener
 		
 		for(Player target : players)
 		{
-			System.out.println("Replacing : " + target.getName());
 			sReplace = sReplace.replaceFirst(target.getName(), target.getDisplayName());
-			System.out.println(sReplace);
 		}
 		
 		event.setDeathMessage(sReplace);
