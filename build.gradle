@@ -5,7 +5,7 @@ apply plugin: 'eclipse'
 sourceCompatibility = 1.6
 
 // Plugin Version - Major / Minor / Hotfix
-version = "5.9.0-DEV"
+version = "6.0.0"
 
 jar {
 	archiveName = "DispNameChanger.jar"
