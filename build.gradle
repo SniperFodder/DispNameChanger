@@ -27,7 +27,7 @@ repositories {
 
 	// Spout Repo
 	maven {
-		url "http://repo.spout.org"
+		url "http://nexus.spout.org/content/groups/public"
 	}
 
 	// TagAPI Repo
