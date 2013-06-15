@@ -99,4 +99,5 @@ save:
     rename: true
     quit: false
 scoreboard: false
+debug: false
 commands:

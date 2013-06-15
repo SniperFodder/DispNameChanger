@@ -119,7 +119,10 @@ public class DPL implements Listener
 			return;
 		}
 		
-		log.info("onPlayerKick - before:" + event.getLeaveMessage());
+		if(plugin.isDebug())
+		{
+			log.info("onPlayerKick - before:" + event.getLeaveMessage());
+		}
 		
 		Player player = event.getPlayer();
 		
@@ -310,7 +313,10 @@ public class DPL implements Listener
 					.append(event.getMessage()).append("| to |")
 					.append(sbCommand.toString()).append("|.");
 			
-			log.info(sb.toString());
+			if(plugin.isDebug())
+			{
+				log.info(sb.toString());
+			}
 		}
 	}
 	

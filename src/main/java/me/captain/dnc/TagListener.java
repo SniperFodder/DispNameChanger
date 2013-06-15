@@ -62,8 +62,10 @@ public class TagListener implements Listener
 			
 			formatter.applyPattern(locale.getString(DNCStrings.INFO_TAG_MODIFIED));
 			
-			log.info(DNCStrings.dnc_long + formatter.format(tagArgs));
-			
+			if(plugin.isDebug())
+			{
+				log.info(DNCStrings.dnc_long + formatter.format(tagArgs));
+			}
 			return;
 		}
 		

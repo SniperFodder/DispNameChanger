@@ -75,6 +75,8 @@ public class DispNameChanger extends JavaPlugin
 	
 	private boolean bChangeLogin;
 	
+	private boolean bDebug;
+	
 	private boolean bGlobalAnnounce;
 	
 	private boolean bSaveOnQuit;
@@ -209,6 +211,11 @@ public class DispNameChanger extends JavaPlugin
 	public boolean isBroadcastAll()
 	{
 		return bBroadcastAll;
+	}
+	
+	public boolean isDebug()
+	{
+		return bDebug;
 	}
 	
 	/**
@@ -673,6 +680,8 @@ public class DispNameChanger extends JavaPlugin
 		{
 			log.throwing("DispNameChanger", "loadConfig", e);
 		}
+		
+		bDebug = conf.getBoolean("debug");
 		
 		bChangeDeath = conf.getBoolean("messages.death");
 		
