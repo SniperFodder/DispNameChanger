@@ -11,28 +11,40 @@ public enum DNCCommands
 	/**
 	 * The command used to trigger a check action.
 	 */
-	CHECK("checkname"),
+	CHECK("checkname", DNCStrings.CMD_CHECKNAME_DESCRIPTION, DNCStrings.CMD_CHECKNAME_USAGE, DNCStrings.CMD_CHECKNAME_ALIAS),
 	
 	/**
 	 * The command used to trigger a rename action.
 	 */
-	RENAME("rename"),
+	RENAME("rename", DNCStrings.CMD_RENAME_DESCRIPTION, DNCStrings.CMD_RENAME_USAGE, DNCStrings.CMD_RENAME_ALIAS),
 	
 	/**
 	 * The command used to trigger a reset action.
 	 */
-	RESET("reset"),
+	RESET("reset", DNCStrings.CMD_RESET_DESCRIPTION, DNCStrings.CMD_RESET_USAGE, DNCStrings.CMD_RESET_ALIAS),
 	
 	/**
 	 * The command used to trigger a list action.
 	 */
-	LIST("displaylist");
+	LIST("displaylist", DNCStrings.CMD_DISPLAYLIST_DESCRIPTION, DNCStrings.CMD_RESET_USAGE, DNCStrings.CMD_RESET_ALIAS);
 	
 	private String sCommand;
 	
-	DNCCommands(String command)
+	private DNCStrings slDescription;
+	
+	private DNCStrings slUsage;
+	
+	private DNCStrings sAlias;
+	
+	DNCCommands(String command, DNCStrings description, DNCStrings usage, DNCStrings alias)
 	{
 		sCommand = command;
+		
+		slDescription = description;
+		
+		slUsage = usage;
+		
+		sAlias = alias;
 	}
 	
 	/**
@@ -43,5 +55,35 @@ public enum DNCCommands
 	public String getName()
 	{
 		return sCommand;
+	}
+	
+	/**
+	 * Retrieves the DNCStrings enum for the command's description.
+	 * 
+	 * @return The Description Enumeration for that command.
+	 */
+	public DNCStrings getDescription()
+	{
+		return slDescription;
+	}
+	
+	/**
+	 * Retrieves the DNCStrings enum for the command's usage.
+	 * 
+	 * @return The Usage Enumeration for that command.
+	 */
+	public DNCStrings getUsage()
+	{
+		return slUsage;
+	}
+	
+	/**
+	 * Retrieves the DNCStrings enum for the Command's Localized Alias.
+	 * 
+	 * @return A DNCString object representing the command's localized alias.
+	 */
+	public DNCStrings getAlias()
+	{
+		return sAlias;
 	}
 }

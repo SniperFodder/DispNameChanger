@@ -19,28 +19,24 @@ commands:
             Surround names with spaces in quotes (i.e. "Super Bob").
             /rename <target> <new name>
             /rename <new name>
-            Aliases: newname
     reset:
         aliases: resetname
         description: Resets the players name or target player.
         permission: dispname.change
         usage: |
             /resetname [target]
-            Aliases: resetname
     checkname:
         aliases: [namecheck, realname, whois]
         description: Shows the alternate name of the player (Real name or Display name).
         permission: dispname.check
         usage: |
             /checkname <name>
-            Aliases: checkname, namecheck
     displaylist:
         aliases: [listnames, displist, dnclist]
         description: Shows a list of all the users and their display names.
         permission: dispname.list
         usage: |
             /displaylist [page number]
-            Aliases: listnames, displist, dnclist
 permissions:
     dispname.*:
         description: Allows access to all DispNameChanger commands and reserved color codes.

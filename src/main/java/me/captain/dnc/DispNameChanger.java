@@ -20,6 +20,7 @@ import javax.persistence.PersistenceException;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -423,7 +424,22 @@ public class DispNameChanger extends JavaPlugin
 		
 		for (DNCCommands cmd : DNCCommands.values())
 		{
-			getCommand(cmd.getName()).setExecutor(executor);
+			PluginCommand command = getCommand(cmd.getName());
+			
+			command.setExecutor(executor);
+			
+			command.setDescription(localization.getString(cmd.getDescription()));
+			
+			command.setUsage(localization.getString(cmd.getUsage()));
+			
+			if(!localization.getString(cmd.getAlias()).trim().equalsIgnoreCase("noalias"))
+			{
+				List<String> lAlias = command.getAliases();
+				
+				lAlias.add(localization.getString(cmd.getAlias()));
+				
+				command.setAliases(lAlias);
+			}
 		}
 		
 		if (pSpout == null)
@@ -777,25 +793,33 @@ public class DispNameChanger extends JavaPlugin
 		
 		String sLocale = getConfig().getString("language");
 		
-		if (sLocale.equals("en_US"))
-		{
-			locale = Locale.ENGLISH;
-			
-			log.info(DNCStrings.dnc_long + "English Translation Selected.");
-		}
-		else if (sLocale.equals("fr"))
-		{
-			locale = Locale.FRENCH;
-			
-			log.info(DNCStrings.dnc_long + "French Translation Selected.");
-		}
+		String[] sArray = sLocale.split("_");
 		
-		if (locale == null)
+		if(sArray != null)
 		{
-			log.severe(DNCStrings.dnc_long + "Unknown Locale given: "
-					+ sLocale);
-			
-			log.severe(DNCStrings.dnc_long + "Reverting to English!");
+			if(verifyLocale(sArray))
+			{
+				if((sArray.length > 1))
+				{
+					locale = new Locale(sArray[0], sArray[1]);
+				}
+				else if (sArray.length > 0)
+				{
+					locale = new Locale(sArray[0]);
+				}
+				
+				log.info(DNCStrings.dnc_long + locale.getDisplayLanguage() + " Translation Selected.");
+			}
+			else
+			{
+				log.severe(DNCStrings.dnc_long + "Invalid Locale given! Reverting to English!");
+				
+				locale = Locale.ENGLISH;
+			}
+		}
+		else
+		{
+			log.severe(DNCStrings.dnc_long + "No Locale given! Reverting to English!");
 			
 			locale = Locale.ENGLISH;
 		}
@@ -843,6 +867,50 @@ public class DispNameChanger extends JavaPlugin
 		}
 		
 		localization.loadTranslations();
+	}
+	
+	private boolean verifyLocale(String[] input)
+	{
+		String[] saCountries = Locale.getISOCountries();
+		
+		boolean bCountry = false;
+		
+		String[] saLanguages = Locale.getISOLanguages();
+		
+		boolean bLanguage = false;
+		
+		if(input.length > 1)
+		{
+			for (String sLanguage : saLanguages)
+			{
+				if(input[0].equalsIgnoreCase(sLanguage))
+				{
+					bLanguage = true;
+				}
+			}
+			
+			for (String sCountry : saCountries)
+			{
+				if(input[1].equalsIgnoreCase(sCountry))
+				{
+					bCountry = true;
+				}
+			}
+			
+			return bCountry && bLanguage;
+		}
+		else
+		{
+			for (String sLanguage : saLanguages)
+			{
+				if(input[0].equalsIgnoreCase(sLanguage))
+				{
+					bLanguage = true;
+				}
+			}
+			
+			return bLanguage;
+		}
 	}
 	
 	/**
