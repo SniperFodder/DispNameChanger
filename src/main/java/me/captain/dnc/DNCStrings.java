@@ -10,6 +10,63 @@ package me.captain.dnc;
 public enum DNCStrings
 {
 	/*
+	 * Command Strings
+	 */
+	/**
+	 * Rename's Description.
+	 */
+	CMD_RENAME_DESCRIPTION,
+	
+	/**
+	 * Rename's Usage.
+	 */
+	CMD_RENAME_USAGE,
+	
+	/**
+	 * A localized alias for the command.
+	 */
+	CMD_RENAME_ALIAS,
+	
+	/**
+	 * Reset's Description.
+	 */
+	CMD_RESET_DESCRIPTION,
+	
+	/**
+	 * Reset's Usage.
+	 */
+	CMD_RESET_USAGE,
+	
+	/**
+	 * A localized alias for the command.
+	 */
+	CMD_RESET_ALIAS,
+	
+	/**
+	 * CheckName's Description
+	 */
+	CMD_CHECKNAME_DESCRIPTION,
+	
+	/**
+	 * CheckName's Usage.
+	 */
+	CMD_CHECKNAME_USAGE,
+	
+	/**
+	 * A localized alias for the command.
+	 */
+	CMD_CHECKNAME_ALIAS,
+	
+	/**
+	 * DisplayList's Description,
+	 */
+	CMD_DISPLAYLIST_DESCRIPTION,
+	
+	/**
+	 * DisplayList's Usage.
+	 */
+	CMD_DISPLAYLIST_USAGE,
+	/*
 	 * Error Strings
 	 */
 	/**
