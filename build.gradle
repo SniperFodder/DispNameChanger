@@ -2,10 +2,10 @@ apply plugin: 'java'
 apply plugin: 'eclipse'
 
 // Compiled against Java 7, Compliance Level Java 6
-sourceCompatibility = 1.6
+sourceCompatibility = 1.7
 
 // Plugin Version - Major / Minor / Hotfix
-version = "6.0.0"
+version = "7.0.0"
 
 jar {
 	archiveName = "DispNameChanger.jar"
@@ -22,12 +22,7 @@ repositories {
 
 	// Bukkit Repo
 	maven {
-		url "http://repo.bukkit.org/content/repositories/releases/"
-	}
-
-	// Spout Repo
-	maven {
-		url "http://nexus.spout.org/content/groups/public"
+		url "http://repo.bukkit.org/content/repositories/public/"
 	}
 
 	// TagAPI Repo
@@ -38,13 +33,10 @@ repositories {
 
 dependencies {
 	// Bukkit API Required Dependancy
-	compile group: 'org.bukkit', name: 'bukkit', version: '1.5.2-R0.1'
-
-	// SpoutPlugin API Required Dependancy
-	compile group: 'org.getspout', name: 'spoutplugin', version: '1.5.1-R0.3-SNAPSHOT'
+	compile group: 'org.bukkit', name: 'bukkit', version: '1.7.9-R0.2'
 
 	// TagAPI Required Dependancy
-	compile group: 'org.kitteh', name: 'tagapi', version: '2.3'
+	compile group: 'org.kitteh', name: 'tagapi', version: '3.0.5'
 	
 	testCompile 'junit:junit:4.8.2'
 }

@@ -2,7 +2,6 @@ package me.captain.dnc;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.TimerTask;
 import java.util.logging.Logger;
 
 import me.captain.dnc.DispNameAPI.MessageType;
@@ -17,7 +16,6 @@ import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.getspout.spoutapi.player.SpoutPlayer;
 
 /**
  * Contains functions for ensuring the player is named properly, as well as
@@ -94,14 +92,6 @@ public class DPL implements Listener
 				event.setJoinMessage(event.getJoinMessage().replaceFirst(
 						player.getName(), player.getDisplayName()));
 			}
-		}
-		
-		if (plugin.isSpoutEnabled() && plugin.useSpoutTitle())
-		{
-			plugin.getServer()
-					.getScheduler()
-					.scheduleSyncDelayedTask(plugin, new RenameTask(player),
-							1L);
 		}
 	}
 	
@@ -434,27 +424,5 @@ public class DPL implements Listener
 		}
 		
 		removeOrderedPlayer(player);
-	}
-	
-	/**
-	 * Handles setting the title for everyone when a new player joins.
-	 * 
-	 * @author Mark 'SniperFodder' Gunnett
-	 * 
-	 */
-	private class RenameTask extends TimerTask
-	{
-		private SpoutPlayer player;
-		
-		public RenameTask(Player player)
-		{
-			this.player = (SpoutPlayer) player;
-		}
-		
-		@Override
-		public void run()
-		{
-			player.setTitle(player.getDisplayName());
-		}
 	}
 }

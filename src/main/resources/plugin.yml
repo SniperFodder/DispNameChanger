@@ -9,7 +9,7 @@ authors: [itsatacoshop247, Daxiongmao87, Luke Zwekii, Sammy, SniperFodder, bearb
 website: http://dev.bukkit.org/server-mods/dispnamechanger/
 main: me.captain.dnc.DispNameChanger
 database: true
-softdepend: [Spout, TagAPI]
+softdepend: [TagAPI]
 commands:
     rename:
         aliases: newname
@@ -88,13 +88,13 @@ permissions:
         default: op
     dispname.change:
         description: Allows a user to change their display name.
-        default: op
+        default: true
     dispname.changeother:
         description: Allows a user to change someone else's display name.
         default: op
     dispname.changespace:
         description: Allows a user to use a space in the display name.
-        default: op
+        default: true
     dispname.check:
         description: Allows a user to check who a renamed person is.
         default: true

@@ -8,7 +8,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.kitteh.tag.PlayerReceiveNameTagEvent;
+import org.kitteh.tag.AsyncPlayerReceiveNameTagEvent;
 
 /**
  * This Class holds all the listeners used for Changing the tag of players
@@ -41,7 +41,7 @@ public class TagListener implements Listener
 	}
 	
 	@EventHandler(priority = EventPriority.LOW)
-	public void onNameTag(PlayerReceiveNameTagEvent event)
+	public void onNameTag(AsyncPlayerReceiveNameTagEvent event)
 	{
 		if(!plugin.useTagTitle())
 		{
@@ -50,7 +50,7 @@ public class TagListener implements Listener
 		
 		Player target = event.getNamedPlayer();
 		
-		if(event.isModified())
+		if(event.isTagModified())
 		{
 			Object[] tagArgs = new Object[3];
 			

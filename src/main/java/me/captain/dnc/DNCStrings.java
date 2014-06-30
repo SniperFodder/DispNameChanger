@@ -182,11 +182,6 @@ public enum DNCStrings
 	INFO_NICK_TARGET,
 	
 	/**
-	 * No Spout found statement.
-	 */
-	INFO_NO_SPOUT,
-	
-	/**
 	 * No TagAPI Found Statement.
 	 */
 	INFO_NO_TAGAPI,
@@ -195,21 +190,6 @@ public enum DNCStrings
 	 * Called if saving completely disabled by config options.
 	 */
 	INFO_SAVE_DISABLED,
-	
-	/**
-	 * Spout found statement.
-	 */
-	INFO_SPOUT,
-	
-	/**
-	 * Spout Achievement message for caller about new name.
-	 */
-	INFO_SPOUT_CALLER,
-	
-	/**
-	 * Spout Achievement message for target about new name.
-	 */
-	INFO_SPOUT_TARGET,
 	
 	/**
 	 * Server Log stating Tag modified by another plugin, no changed
@@ -221,11 +201,6 @@ public enum DNCStrings
 	 * TagAPI Found statement
 	 */
 	INFO_TAGAPI,
-	
-	/**
-	 * TagAPI and SpoutAPI Load conflict message.
-	 */
-	INFO_TAGAPI_CONFLICT,
 	
 	/*
 	 * Permission errors.

@@ -7,7 +7,7 @@
 # ----
 # Integration is used to determine support for various Plugin API's
 #   that DNC will use. For instance, to turn off setting titles
-#   above a player's head in Spout, setting Spout.title:false will
+#   above a player's head in TagAPI, setting tagapi.title:false will
 #   turn off titles, but not announcement messages.
 # True: Integration enabled for API or Specific Feature.
 # False: Integration disabled.
@@ -78,9 +78,6 @@ global-announce:
     enabled: true
     target: ALL
 integration:
-    spout:
-        title: true
-        announcements: true
     tagAPI:
         title: true
 language: en_US

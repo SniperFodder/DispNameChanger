@@ -56,48 +56,27 @@ public class DispNameChanger extends JavaPlugin
 	
 	private Locale locale;
 	
-	private Plugin pSpout;
-	
 	private Plugin pTag;
 	
 	private Properties pVersion;
 	
 	private String sPrefixFull;
-	
 	private String sPrefixShort;
 	
 	private TreeMap<String, Player> tmPlayers;
 	
 	private boolean bBroadcastAll;
-	
 	private boolean bChangeDeath;
-	
 	private boolean bChangeKick;
-	
 	private boolean bChangeLogin;
-	
 	private boolean bDebug;
-	
 	private boolean bGlobalAnnounce;
-	
 	private boolean bSaveOnQuit;
-	
 	private boolean bSaveOnRename;
-	
 	private boolean bUsePrefix;
-	
 	private boolean bUsePrefixColor;
-	
-	private boolean bUseSpout;
-	
-	private boolean bUseSpoutTitle;
-	
-	private boolean bUseSpoutAnnounce;
-	
 	private boolean bUseScoreboard;
-	
 	private boolean bUseTagAPI;
-	
 	private boolean bUseTagTitle;
 	
 	private int iDisplayPages;
@@ -336,16 +315,6 @@ public class DispNameChanger extends JavaPlugin
 	}
 	
 	/**
-	 * Returns whether or not spout is on the server.
-	 * 
-	 * @return true if spout is loaded, false otherwise.
-	 */
-	public boolean isSpoutEnabled()
-	{
-		return bUseSpout;
-	}
-	
-	/**
 	 * Returns whether or not to use TagAPI. Tag API May be available but
 	 * disabled due to Spout also being loaded.
 	 * 
@@ -354,28 +323,6 @@ public class DispNameChanger extends JavaPlugin
 	public boolean isTagAPIEnabled()
 	{
 		return bUseTagAPI;
-	}
-	
-	/**
-	 * Returns whether to use the spout title when spout is available.
-	 * 
-	 * @return true to change title, false otherwise.
-	 */
-	public boolean useSpoutTitle()
-	{
-		return bUseSpoutTitle;
-	}
-	
-	/**
-	 * Returns whether to use the Achievement plates in Spout to announce
-	 * name changes.
-	 * 
-	 * @return True to announce name changes through achievement plates.
-	 *         False otherwise.
-	 */
-	public boolean useSpoutAnnounce()
-	{
-		return bUseSpoutAnnounce;
 	}
 	
 	/**
@@ -412,8 +359,6 @@ public class DispNameChanger extends JavaPlugin
 		
 		PluginManager pm = getServer().getPluginManager();
 		
-		pSpout = pm.getPlugin("Spout");
-		
 		pTag = pm.getPlugin("TagAPI");
 		
 		formatTranslations();
@@ -442,22 +387,7 @@ public class DispNameChanger extends JavaPlugin
 			}
 		}
 		
-		if (pSpout == null)
-		{
-			this.bUseSpout = false;
-			
-			log.info(DNCStrings.dnc_long
-					+ localization.getString(DNCStrings.INFO_NO_SPOUT));
-		}
-		else
-		{
-			this.bUseSpout = true;
-			
-			log.info(DNCStrings.dnc_long
-					+ localization.getString(DNCStrings.INFO_SPOUT));
-		}
-		
-		if (pTag != null && !bUseSpout)
+		if (pTag != null)
 		{
 			bUseTagAPI = true;
 			
@@ -467,13 +397,6 @@ public class DispNameChanger extends JavaPlugin
 			
 			log.info(DNCStrings.dnc_long
 					+ localization.getString(DNCStrings.INFO_TAGAPI));
-		}
-		else if (pTag != null && bUseSpout)
-		{
-			bUseTagAPI = false;
-			
-			log.warning(DNCStrings.dnc_long
-					+ localization.getString(DNCStrings.INFO_TAGAPI_CONFLICT));
 		}
 		else
 		{
@@ -541,18 +464,7 @@ public class DispNameChanger extends JavaPlugin
 	 */
 	private void formatTranslations()
 	{
-		Object[] spoutArgs = new Object[1];
-		
 		Object[] tagArgs = new Object[1];
-		
-		if (pSpout != null)
-		{
-			spoutArgs[0] = pSpout.getDescription().getVersion();
-		}
-		else
-		{
-			spoutArgs[0] = "unknown";
-		}
 		
 		if (pTag != null)
 		{
@@ -588,11 +500,6 @@ public class DispNameChanger extends JavaPlugin
 		MessageFormat formatter = new MessageFormat("");
 		
 		formatter.setLocale(locale);
-		
-		formatter.applyPattern(localization.getString(DNCStrings.INFO_SPOUT));
-		
-		localization.setString(DNCStrings.INFO_SPOUT,
-				formatter.format(spoutArgs));
 		
 		formatter.applyPattern(localization.getString(DNCStrings.INFO_TAGAPI));
 		
@@ -758,15 +665,8 @@ public class DispNameChanger extends JavaPlugin
 		}
 		
 		bUseScoreboard = conf.getBoolean("scoreboard");
-		
 		bSaveOnQuit = conf.getBoolean("save.quit");
-		
 		bSaveOnRename = conf.getBoolean("save.rename");
-		
-		bUseSpoutTitle = conf.getBoolean("integration.spout.title");
-		
-		bUseSpoutAnnounce = conf.getBoolean("integration.spout.announcements");
-		
 		bUseTagTitle = conf.getBoolean("integration.tagAPI.title");
 		
 		String sPages = conf.getString("pagination");

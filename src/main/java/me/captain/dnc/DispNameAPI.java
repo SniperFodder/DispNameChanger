@@ -7,12 +7,10 @@ import java.util.regex.Pattern;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.command.RemoteConsoleCommandSender;
 import org.bukkit.entity.Player;
-import org.getspout.spoutapi.player.SpoutPlayer;
 import org.kitteh.tag.TagAPI;
 
 /**
@@ -680,40 +678,6 @@ public class DispNameAPI
 		{
 			sendMessage(DNCStrings.INFO_NICK_CALLER, sender, users,
 					MessageType.CONFIRMATION);
-		}
-		
-		if (plugin.isSpoutEnabled())
-		{
-			SpoutPlayer spoutTarget = (SpoutPlayer) target;
-			
-			if(plugin.useSpoutAnnounce())
-			{
-				if (spoutTarget.isSpoutCraftEnabled())
-				{
-					spoutTarget.sendNotification(
-							locale.getString(DNCStrings.INFO_SPOUT_TARGET),
-							spoutName, Material.DIAMOND);
-				}
-				
-				if (sender != null && (sender instanceof Player) && !sender.equals(target))
-				{
-					SpoutPlayer spoutCaller = (SpoutPlayer) sender;
-					
-					if (spoutCaller.isSpoutCraftEnabled())
-					{
-						formatter.applyPattern(locale
-								.getString(DNCStrings.INFO_SPOUT_CALLER));
-						
-						spoutCaller.sendNotification(formatter.format(users),
-								spoutName, Material.DIAMOND);
-					}
-				}
-			}
-			
-			if(plugin.useSpoutTitle())
-			{
-				spoutTarget.setTitle(spoutName);
-			}
 		}
 		
 		if (plugin.useGlobalAnnounce())
@@ -1591,13 +1555,6 @@ public class DispNameAPI
 		}
 		
 		player.setDisplayName(sDName);
-		
-		if (plugin.isSpoutEnabled() && plugin.useSpoutTitle())
-		{
-			SpoutPlayer spoutPlayer = (SpoutPlayer) player;
-			
-			spoutPlayer.setTitle(sDName);
-		}
 	}
 	
 	/**
