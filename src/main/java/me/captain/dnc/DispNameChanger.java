@@ -66,6 +66,7 @@ public class DispNameChanger extends JavaPlugin
 	private TreeMap<String, Player> tmPlayers;
 	
 	private boolean bBroadcastAll;
+	private boolean bChangeAchievement;
 	private boolean bChangeDeath;
 	private boolean bChangeKick;
 	private boolean bChangeLogin;
@@ -123,6 +124,8 @@ public class DispNameChanger extends JavaPlugin
 		
 		bUsePrefix = false;
 		
+		bChangeAchievement = true;
+		
 		bChangeDeath = true;
 		
 		bChangeLogin = true;
@@ -150,6 +153,16 @@ public class DispNameChanger extends JavaPlugin
 		ccPrefix = ChatColor.YELLOW;
 		
 		locale = null;
+	}
+	
+	/**
+	 * Check whether achievement earned messages should be changed to use display names.
+	 * 
+	 * @return true to change, false otherwise.
+	 */
+	public boolean changeAchievement()
+	{
+		return bChangeAchievement;
 	}
 	
 	/**

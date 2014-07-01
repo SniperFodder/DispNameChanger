@@ -12,6 +12,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerAchievementAwardedEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerKickEvent;
@@ -45,6 +46,19 @@ public class DPL implements Listener
 		plugin = DispNameChanger.getInstance();
 		
 		api = DispNameAPI.getInstance();
+	}
+	
+	public void onPlayerAchievement(final PlayerAchievementAwardedEvent event)
+	{
+		Player player = event.getPlayer();
+		
+		if(plugin.changeAchievement())
+		{
+			if (api.isNameChanged(player))
+			{
+				
+			}
+		}
 	}
 	
 	/**
